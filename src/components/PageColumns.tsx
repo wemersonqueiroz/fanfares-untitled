@@ -29,9 +29,7 @@ export function PageColumns({ left, center, right, className }: PageColumnsProps
   return (
     <div className={cx("flex flex-1 min-h-0 overflow-hidden", className)}>
       {/* Left sidebar — hidden below lg */}
-      <aside className="hidden lg:flex p-4 h-full shrink-0">
-        {left}
-      </aside>
+      <aside className="hidden lg:flex p-4 h-full shrink-0">{left}</aside>
 
       {/* Center column — max-width enforced here for all pages.
        * `xl:pr-0` only when a right sidebar is provided (xl+ shows the sidebar
@@ -39,7 +37,7 @@ export function PageColumns({ left, center, right, className }: PageColumnsProps
        * at every breakpoint so content never goes flush to the viewport edge. */}
       <main
         className={cx(
-          "flex-1 min-w-0 max-w-content-center py-4 px-3 lg:pl-0 lg:pr-6 overflow-y-auto scrollbar-hide",
+          "flex-1 min-w-0 w-full py-4 px-3 lg:pl-0 lg:pr-6 overflow-y-auto scrollbar-hide",
           right && "xl:pr-0"
         )}>
         {center}

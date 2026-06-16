@@ -21,6 +21,7 @@ import { cx } from "@/utils/cx"
 import { Toggle } from "@/components/Compose"
 import { Button } from "@/components/Button"
 import { IconButton } from "@/components/IconButton"
+import { RoutePageTitle } from "@/components/RoutePageTitle"
 import { getTheme, applyTheme, saveTheme } from "@/utils/theme"
 
 // ── Public types ──────────────────────────────────────────────────────────────
@@ -223,18 +224,7 @@ function SectionHeader({
   title: string
   onBack: () => void
 }) {
-  return (
-    <div className="flex items-center gap-3 px-6 py-4 border-b border-app-border shrink-0">
-      <IconButton
-        icon={ArrowNarrowLeft}
-        label="Back to settings"
-        variant="ghost-primary"
-        size="md"
-        onClick={onBack}
-      />
-      <h2 className="text-heading-card text-text-primary">{title}</h2>
-    </div>
-  )
+  return <RoutePageTitle title={title} onBack={onBack} />
 }
 
 /** Color swatch button */
@@ -465,7 +455,7 @@ function SectionFooter({
   onSave: () => void
 }) {
   return (
-    <div className="flex items-center justify-between gap-3 px-6 py-4 border-t border-app-border shrink-0">
+    <div className="flex items-center justify-between gap-3 py-4 border-t border-app-border shrink-0">
       <Button variant="tertiary" size="sm" onClick={onReset}>
         Reset
       </Button>
@@ -540,180 +530,174 @@ function AppearanceSection({
   }
 
   return (
-    <div className="flex flex-col h-full">
-      {/* Header */}
+    <div className="flex flex-col gap-8">
       <SectionHeader title="Appearance" onBack={onBack} />
-
-      {/* Scrollable body */}
-      <div className="flex-1 overflow-y-auto scrollbar-hide">
-        <div className="flex flex-col gap-8 p-6">
-          {/* Color Scheme */}
-          <div className="flex flex-col gap-4">
-            <div>
-              <h3 className="text-body-emphasis text-text-primary">
-                Color Scheme
-              </h3>
-              <p className="text-sm text-text-tertiary mt-0.5">
-                Choose your preferred accent color.
-              </p>
-            </div>
-            {/* Preset swatches */}
-            <div className="flex flex-wrap gap-3">
-              {COLOR_SWATCHES.map(sw => (
-                <ColorSwatch
-                  key={sw.id}
-                  hex={sw.hex}
-                  label={sw.label}
-                  isSelected={values.colorScheme === sw.id}
-                  onClick={() => patch({ colorScheme: sw.id, customHex: "" })}
+      <div className="flex flex-col gap-8">
+        {/* Color Scheme */}
+        <div className="flex flex-col gap-4">
+          <div>
+            <h3 className="text-body-emphasis text-text-primary">
+              Color Scheme
+            </h3>
+            <p className="text-sm text-text-tertiary mt-0.5">
+              Choose your preferred accent color.
+            </p>
+          </div>
+          {/* Preset swatches */}
+          <div className="flex flex-wrap gap-3 px-2">
+            {COLOR_SWATCHES.map(sw => (
+              <ColorSwatch
+                key={sw.id}
+                hex={sw.hex}
+                label={sw.label}
+                isSelected={values.colorScheme === sw.id}
+                onClick={() => patch({ colorScheme: sw.id, customHex: "" })}
+              />
+            ))}
+            {/* Custom swatch */}
+            <button
+              type="button"
+              aria-label="Custom color"
+              aria-pressed={values.colorScheme === "custom"}
+              onClick={() => patch({ colorScheme: "custom" })}
+              className={cx(
+                "size-8 rounded-full cursor-pointer shrink-0",
+                "border-2 border-dashed transition-colors duration-150",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/50",
+                values.colorScheme === "custom"
+                  ? "border-brand-500 bg-app-card"
+                  : "border-app-border bg-app-surface hover:border-app-border-hover"
+              )}>
+              <span className="text-xs text-text-tertiary">+</span>
+            </button>
+          </div>
+          {/* Custom hex input — shown when "custom" selected */}
+          {values.colorScheme === "custom" && (
+            <div className="flex items-center gap-2">
+              <div
+                className="size-8 rounded-full border border-app-border shrink-0"
+                style={{
+                  backgroundColor: values.customHex || "transparent",
+                }}
+              />
+              <div className="flex items-center gap-2 flex-1 px-3 h-9 rounded-lg border border-app-border bg-app-surface focus-within:ring-2 focus-within:ring-brand-500/50 transition-colors duration-150">
+                <span className="text-sm text-text-tertiary">#</span>
+                <input
+                  type="text"
+                  value={values.customHex.replace(/^#/, "")}
+                  onChange={e =>
+                    patch({
+                      customHex: `#${e.target.value.replace(/^#/, "")}`,
+                    })
+                  }
+                  placeholder="7C3AED"
+                  maxLength={6}
+                  className="flex-1 bg-transparent text-sm text-text-primary outline-none placeholder:text-text-placeholder font-mono"
                 />
-              ))}
-              {/* Custom swatch */}
-              <button
-                type="button"
-                aria-label="Custom color"
-                aria-pressed={values.colorScheme === "custom"}
-                onClick={() => patch({ colorScheme: "custom" })}
-                className={cx(
-                  "size-8 rounded-full cursor-pointer shrink-0",
-                  "border-2 border-dashed transition-colors duration-150",
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/50",
-                  values.colorScheme === "custom"
-                    ? "border-brand-500 bg-app-card"
-                    : "border-app-border bg-app-surface hover:border-app-border-hover"
-                )}>
-                <span className="text-xs text-text-tertiary">+</span>
-              </button>
-            </div>
-            {/* Custom hex input — shown when "custom" selected */}
-            {values.colorScheme === "custom" && (
-              <div className="flex items-center gap-2">
-                <div
-                  className="size-8 rounded-full border border-app-border shrink-0"
-                  style={{
-                    backgroundColor: values.customHex || "transparent",
-                  }}
-                />
-                <div className="flex items-center gap-2 flex-1 px-3 h-9 rounded-lg border border-app-border bg-app-surface focus-within:ring-2 focus-within:ring-brand-500/50 transition-colors duration-150">
-                  <span className="text-sm text-text-tertiary">#</span>
-                  <input
-                    type="text"
-                    value={values.customHex.replace(/^#/, "")}
-                    onChange={e =>
-                      patch({
-                        customHex: `#${e.target.value.replace(/^#/, "")}`,
-                      })
-                    }
-                    placeholder="7C3AED"
-                    maxLength={6}
-                    className="flex-1 bg-transparent text-sm text-text-primary outline-none placeholder:text-text-placeholder font-mono"
-                  />
-                </div>
               </div>
-            )}
-          </div>
+            </div>
+          )}
+        </div>
 
-          {/* Display Preferences */}
-          <div className="flex flex-col gap-4">
-            <div>
-              <h3 className="text-body-emphasis text-text-primary">
-                Display Preferences
-              </h3>
-              <p className="text-sm text-text-tertiary mt-0.5">
-                Select light or dark interface.
-              </p>
-            </div>
-            <div className="flex items-stretch gap-3">
-              <DisplayModeCard
-                mode="dark"
-                isSelected={values.displayMode === "dark"}
-                onClick={() => handleDisplayModeChange("dark")}
-              />
-              <DisplayModeCard
-                mode="light"
-                isSelected={values.displayMode === "light"}
-                onClick={() => handleDisplayModeChange("light")}
-              />
-            </div>
+        {/* Display Preferences */}
+        <div className="flex flex-col gap-4">
+          <div>
+            <h3 className="text-body-emphasis text-text-primary">
+              Display Preferences
+            </h3>
+            <p className="text-sm text-text-tertiary mt-0.5">
+              Select light or dark interface.
+            </p>
           </div>
-
-          {/* Transparent Sidebar */}
-          <div className="flex items-center justify-between gap-4 py-1">
-            <div>
-              <h3 className="text-body-emphasis text-text-primary">
-                Transparent Sidebar
-              </h3>
-              <p className="text-sm text-text-tertiary mt-0.5">
-                Makes the left sidebar semi-transparent over the background.
-              </p>
-            </div>
-            <Toggle
-              checked={values.transparentSidebar}
-              onChange={v => patch({ transparentSidebar: v })}
-              label="Toggle transparent sidebar"
+          <div className="flex items-stretch gap-3">
+            <DisplayModeCard
+              mode="dark"
+              isSelected={values.displayMode === "dark"}
+              onClick={() => handleDisplayModeChange("dark")}
+            />
+            <DisplayModeCard
+              mode="light"
+              isSelected={values.displayMode === "light"}
+              onClick={() => handleDisplayModeChange("light")}
             />
           </div>
+        </div>
 
-          {/* Language */}
-          <div className="flex flex-col gap-3">
-            <div>
-              <h3 className="text-body-emphasis text-text-primary">Language</h3>
-              <p className="text-sm text-text-tertiary mt-0.5">
-                Choose the display language for the interface.
-              </p>
-            </div>
-            <div className="relative">
-              <select
-                value={values.language}
-                onChange={e => patch({ language: e.target.value })}
-                className={cx(
-                  "w-full px-3 h-10 pr-8 rounded-lg border border-app-border bg-app-surface",
-                  "text-sm text-text-primary outline-none appearance-none",
-                  "focus-visible:ring-2 focus-visible:ring-brand-500/50 transition-colors duration-150",
-                  "cursor-pointer"
-                )}>
-                {LANGUAGES.map(lang => (
-                  <option key={lang} value={lang}>
-                    {lang}
-                  </option>
-                ))}
-              </select>
-              <ChevronRight
-                size={14}
-                color="var(--color-text-tertiary)"
-                aria-hidden="true"
-                className="absolute right-3 top-1/2 -translate-y-1/2 rotate-90 pointer-events-none shrink-0"
-              />
-            </div>
+        {/* Transparent Sidebar */}
+        <div className="flex items-center justify-between gap-4 py-1">
+          <div>
+            <h3 className="text-body-emphasis text-text-primary">
+              Transparent Sidebar
+            </h3>
+            <p className="text-sm text-text-tertiary mt-0.5">
+              Makes the left sidebar semi-transparent over the background.
+            </p>
           </div>
+          <Toggle
+            checked={values.transparentSidebar}
+            onChange={v => patch({ transparentSidebar: v })}
+            label="Toggle transparent sidebar"
+          />
+        </div>
 
-          {/* Banner Appearance */}
-          <div className="flex flex-col gap-4">
-            <div>
-              <h3 className="text-body-emphasis text-text-primary">
-                Banner Appearance
-              </h3>
-              <p className="text-sm text-text-tertiary mt-0.5">
-                Choose how profile and page banners are displayed.
-              </p>
-            </div>
-            <div className="flex items-stretch gap-3">
-              <BannerStyleCard
-                style="default"
-                isSelected={values.bannerStyle === "default"}
-                onClick={() => patch({ bannerStyle: "default" })}
-              />
-              <BannerStyleCard
-                style="simplified"
-                isSelected={values.bannerStyle === "simplified"}
-                onClick={() => patch({ bannerStyle: "simplified" })}
-              />
-            </div>
+        {/* Language */}
+        <div className="flex flex-col gap-3">
+          <div>
+            <h3 className="text-body-emphasis text-text-primary">Language</h3>
+            <p className="text-sm text-text-tertiary mt-0.5">
+              Choose the display language for the interface.
+            </p>
+          </div>
+          <div className="relative">
+            <select
+              value={values.language}
+              onChange={e => patch({ language: e.target.value })}
+              className={cx(
+                "w-full px-3 h-10 pr-8 rounded-lg border border-app-border bg-app-surface",
+                "text-sm text-text-primary outline-none appearance-none",
+                "focus-visible:ring-2 focus-visible:ring-brand-500/50 transition-colors duration-150",
+                "cursor-pointer"
+              )}>
+              {LANGUAGES.map(lang => (
+                <option key={lang} value={lang}>
+                  {lang}
+                </option>
+              ))}
+            </select>
+            <ChevronRight
+              size={14}
+              color="var(--color-text-tertiary)"
+              aria-hidden="true"
+              className="absolute right-3 top-1/2 -translate-y-1/2 rotate-90 pointer-events-none shrink-0"
+            />
+          </div>
+        </div>
+
+        {/* Banner Appearance */}
+        <div className="flex flex-col gap-4">
+          <div>
+            <h3 className="text-body-emphasis text-text-primary">
+              Banner Appearance
+            </h3>
+            <p className="text-sm text-text-tertiary mt-0.5">
+              Choose how profile and page banners are displayed.
+            </p>
+          </div>
+          <div className="flex items-stretch gap-3">
+            <BannerStyleCard
+              style="default"
+              isSelected={values.bannerStyle === "default"}
+              onClick={() => patch({ bannerStyle: "default" })}
+            />
+            <BannerStyleCard
+              style="simplified"
+              isSelected={values.bannerStyle === "simplified"}
+              onClick={() => patch({ bannerStyle: "simplified" })}
+            />
           </div>
         </div>
       </div>
 
-      {/* Footer */}
       <SectionFooter
         onReset={handleReset}
         onCancel={handleCancel}
@@ -745,146 +729,139 @@ function NotificationsSection({
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col gap-8">
       <SectionHeader title="Notifications" onBack={onBack} />
+      <div className="flex flex-col gap-0 divide-y divide-app-border">
+        {/* News & Updates */}
+        <div className="flex items-center justify-between gap-4 py-5">
+          <div>
+            <p className="text-sm font-semibold text-text-primary">
+              News &amp; Updates
+            </p>
+            <p className="text-xs text-text-tertiary mt-0.5">
+              Announcements, feature updates, and platform news.
+            </p>
+          </div>
+          <Toggle
+            checked={values.newsAndUpdates}
+            onChange={v => patch({ newsAndUpdates: v })}
+            label="Toggle news and updates notifications"
+          />
+        </div>
 
-      <div className="flex-1 overflow-y-auto scrollbar-hide">
-        <div className="flex flex-col gap-0 divide-y divide-app-border">
-          {/* News & Updates */}
-          <div className="flex items-center justify-between gap-4 px-6 py-5">
-            <div>
-              <p className="text-sm font-semibold text-text-primary">
-                News &amp; Updates
-              </p>
-              <p className="text-xs text-text-tertiary mt-0.5">
-                Announcements, feature updates, and platform news.
-              </p>
-            </div>
-            <Toggle
-              checked={values.newsAndUpdates}
-              onChange={v => patch({ newsAndUpdates: v })}
-              label="Toggle news and updates notifications"
+        {/* User Activity */}
+        <div className="flex items-center justify-between gap-4 py-5">
+          <div>
+            <p className="text-sm font-semibold text-text-primary">
+              User Activity
+            </p>
+            <p className="text-xs text-text-tertiary mt-0.5">
+              New followers, zaps, and reactions to your content.
+            </p>
+          </div>
+          <Toggle
+            checked={values.userActivity}
+            onChange={v => patch({ userActivity: v })}
+            label="Toggle user activity notifications"
+          />
+        </div>
+
+        {/* Comments */}
+        <div className="flex flex-col gap-4 py-5">
+          <div>
+            <p className="text-sm font-semibold text-text-primary">Comments</p>
+            <p className="text-xs text-text-tertiary mt-0.5">
+              When someone comments on your posts.
+            </p>
+          </div>
+          <div className="flex flex-col gap-3">
+            <RadioItem
+              name="comments"
+              value="none"
+              checked={values.commentsLevel === "none"}
+              label="None"
+              description="No comment notifications."
+              onChange={() => patch({ commentsLevel: "none" })}
+            />
+            <RadioItem
+              name="comments"
+              value="mentions"
+              checked={values.commentsLevel === "mentions"}
+              label="Mentions only"
+              description="Only when you're directly mentioned."
+              onChange={() => patch({ commentsLevel: "mentions" })}
+            />
+            <RadioItem
+              name="comments"
+              value="all"
+              checked={values.commentsLevel === "all"}
+              label="All comments"
+              description="Every comment on your posts."
+              onChange={() => patch({ commentsLevel: "all" })}
             />
           </div>
+        </div>
 
-          {/* User Activity */}
-          <div className="flex items-center justify-between gap-4 px-6 py-5">
-            <div>
-              <p className="text-sm font-semibold text-text-primary">
-                User Activity
-              </p>
-              <p className="text-xs text-text-tertiary mt-0.5">
-                New followers, zaps, and reactions to your content.
-              </p>
-            </div>
-            <Toggle
-              checked={values.userActivity}
-              onChange={v => patch({ userActivity: v })}
-              label="Toggle user activity notifications"
+        {/* Reminders */}
+        <div className="flex flex-col gap-4 py-5">
+          <div>
+            <p className="text-sm font-semibold text-text-primary">Reminders</p>
+            <p className="text-xs text-text-tertiary mt-0.5">
+              Reminders about unfinished actions and events.
+            </p>
+          </div>
+          <div className="flex flex-col gap-3">
+            <RadioItem
+              name="reminders"
+              value="none"
+              checked={values.remindersLevel === "none"}
+              label="None"
+              description="No reminder notifications."
+              onChange={() => patch({ remindersLevel: "none" })}
+            />
+            <RadioItem
+              name="reminders"
+              value="important"
+              checked={values.remindersLevel === "important"}
+              label="Important only"
+              description="High-priority reminders only."
+              onChange={() => patch({ remindersLevel: "important" })}
+            />
+            <RadioItem
+              name="reminders"
+              value="all"
+              checked={values.remindersLevel === "all"}
+              label="All reminders"
+              onChange={() => patch({ remindersLevel: "all" })}
             />
           </div>
+        </div>
 
-          {/* Comments */}
-          <div className="flex flex-col gap-4 px-6 py-5">
-            <div>
-              <p className="text-sm font-semibold text-text-primary">
-                Comments
-              </p>
-              <p className="text-xs text-text-tertiary mt-0.5">
-                When someone comments on your posts.
-              </p>
-            </div>
-            <div className="flex flex-col gap-3">
-              <RadioItem
-                name="comments"
-                value="none"
-                checked={values.commentsLevel === "none"}
-                label="None"
-                description="No comment notifications."
-                onChange={() => patch({ commentsLevel: "none" })}
-              />
-              <RadioItem
-                name="comments"
-                value="mentions"
-                checked={values.commentsLevel === "mentions"}
-                label="Mentions only"
-                description="Only when you're directly mentioned."
-                onChange={() => patch({ commentsLevel: "mentions" })}
-              />
-              <RadioItem
-                name="comments"
-                value="all"
-                checked={values.commentsLevel === "all"}
-                label="All comments"
-                description="Every comment on your posts."
-                onChange={() => patch({ commentsLevel: "all" })}
-              />
-            </div>
+        {/* Activity About You */}
+        <div className="flex flex-col gap-4 py-5">
+          <div>
+            <p className="text-sm font-semibold text-text-primary">
+              Activity About You
+            </p>
+            <p className="text-xs text-text-tertiary mt-0.5">
+              When others interact with your profile or content.
+            </p>
           </div>
-
-          {/* Reminders */}
-          <div className="flex flex-col gap-4 px-6 py-5">
-            <div>
-              <p className="text-sm font-semibold text-text-primary">
-                Reminders
-              </p>
-              <p className="text-xs text-text-tertiary mt-0.5">
-                Reminders about unfinished actions and events.
-              </p>
-            </div>
-            <div className="flex flex-col gap-3">
-              <RadioItem
-                name="reminders"
-                value="none"
-                checked={values.remindersLevel === "none"}
-                label="None"
-                description="No reminder notifications."
-                onChange={() => patch({ remindersLevel: "none" })}
-              />
-              <RadioItem
-                name="reminders"
-                value="important"
-                checked={values.remindersLevel === "important"}
-                label="Important only"
-                description="High-priority reminders only."
-                onChange={() => patch({ remindersLevel: "important" })}
-              />
-              <RadioItem
-                name="reminders"
-                value="all"
-                checked={values.remindersLevel === "all"}
-                label="All reminders"
-                onChange={() => patch({ remindersLevel: "all" })}
-              />
-            </div>
-          </div>
-
-          {/* Activity About You */}
-          <div className="flex flex-col gap-4 px-6 py-5">
-            <div>
-              <p className="text-sm font-semibold text-text-primary">
-                Activity About You
-              </p>
-              <p className="text-xs text-text-tertiary mt-0.5">
-                When others interact with your profile or content.
-              </p>
-            </div>
-            <div className="flex flex-col gap-3">
-              <RadioItem
-                name="activity"
-                value="all"
-                checked={values.activityLevel === "all"}
-                label="All activity"
-                onChange={() => patch({ activityLevel: "all" })}
-              />
-              <RadioItem
-                name="activity"
-                value="none"
-                checked={values.activityLevel === "none"}
-                label="None"
-                onChange={() => patch({ activityLevel: "none" })}
-              />
-            </div>
+          <div className="flex flex-col gap-3">
+            <RadioItem
+              name="activity"
+              value="all"
+              checked={values.activityLevel === "all"}
+              label="All activity"
+              onChange={() => patch({ activityLevel: "all" })}
+            />
+            <RadioItem
+              name="activity"
+              value="none"
+              checked={values.activityLevel === "none"}
+              label="None"
+              onChange={() => patch({ activityLevel: "none" })}
+            />
           </div>
         </div>
       </div>
@@ -908,21 +885,19 @@ function PlaceholderSection({
   onBack: () => void
 }) {
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col gap-8">
       <SectionHeader title={title} onBack={onBack} />
-      <div className="flex-1 flex items-center justify-center p-6">
-        <div className="flex flex-col items-center gap-3 text-center">
-          <div className="size-12 rounded-full bg-app-card flex items-center justify-center">
-            <Settings01Icon />
-          </div>
-          <p className="text-sm font-medium text-text-secondary">
-            {title} settings coming soon
-          </p>
-          <p className="text-xs text-text-tertiary max-w-xs">
-            This section is under development and will be available in a future
-            update.
-          </p>
+      <div className="w-full bg-app-card border border-app-border rounded-xl py-16 flex flex-col items-center gap-3 text-center">
+        <div className="size-12 rounded-full bg-app-surface flex items-center justify-center">
+          <Settings01Icon />
         </div>
+        <p className="text-sm font-medium text-text-secondary">
+          {title} settings coming soon
+        </p>
+        <p className="text-xs text-text-tertiary max-w-xs">
+          This section is under development and will be available in a future
+          update.
+        </p>
       </div>
     </div>
   )
@@ -990,37 +965,43 @@ export function SettingsPage({
   }
 
   if (activeSection) {
-    return <div className={cx("flex flex-col h-full", className)}>{renderSection()}</div>
+    return (
+      <div className={cx("flex flex-col w-full", className)}>
+        {renderSection()}
+      </div>
+    )
   }
 
   return (
-    <div className={cx("flex flex-col gap-8 pr-6", className)}>
-      {/* ── Heading row ───────────────────────────────────────────────────── */}
-      <div className="flex items-center justify-between gap-4">
-        <h1 className="text-heading-cover font-bold text-text-primary">
-          Settings
-        </h1>
-
-        {/* Search bar */}
-        <div className={cx(
-          "flex items-center gap-2 px-3 h-10 rounded-lg",
-          "border border-app-border bg-app-card",
-          "w-[280px] shrink-0"
-        )}>
-          <SearchMd size={16} color="var(--color-text-tertiary)" aria-hidden="true" />
-          <input
-            type="text"
-            placeholder="Search"
-            className="flex-1 bg-transparent outline-none text-sm text-text-primary placeholder:text-text-tertiary min-w-0"
-          />
-          <span className="text-xs text-text-tertiary border border-app-border rounded px-1 py-0.5 shrink-0 font-mono">
-            ⌘K
-          </span>
-        </div>
-      </div>
+    <div className={cx("flex flex-col gap-8 w-full", className)}>
+      <RoutePageTitle
+        title="Settings"
+        action={
+          <div
+            className={cx(
+              "flex items-center gap-2 px-3 h-10 rounded-lg",
+              "border border-app-border bg-app-card",
+              "w-[280px] shrink-0"
+            )}>
+            <SearchMd
+              size={16}
+              color="var(--color-text-tertiary)"
+              aria-hidden="true"
+            />
+            <input
+              type="text"
+              placeholder="Search"
+              className="flex-1 bg-transparent outline-none text-sm text-text-primary placeholder:text-text-tertiary min-w-0"
+            />
+            <span className="text-xs text-text-tertiary border border-app-border rounded px-1 py-0.5 shrink-0 font-mono">
+              ⌘K
+            </span>
+          </div>
+        }
+      />
 
       {/* ── Settings list ─────────────────────────────────────────────────── */}
-      <div className="flex flex-col">
+      <div className="flex flex-col ">
         {NAV_ITEMS.map((item, i) => (
           <div key={item.id}>
             <button

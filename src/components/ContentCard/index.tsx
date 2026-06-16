@@ -521,8 +521,8 @@ export function ContentCard({
   return (
     <article
       className={cx(
-        "flex flex-col gap-4 p-5",
-        "bg-bg-primary border border-app-border rounded-2xl",
+        "flex flex-col gap-4 pt-4 pb-8 px-4 ",
+        "bg-bg-primary sm:border sm:border-app-border rounded-xl",
         "cursor-default",
         className
       )}

@@ -1,6 +1,7 @@
 "use client"
 
-import { AppPage } from "@/components/AppShell"
+import { AppPage, DemoContentRightAside } from "@/components/AppShell"
+import { MOCK_VIDEO_PAGE } from "@/components/ContentPage/mock-data"
 import { LibraryPage } from "@/components/Library"
 
 export default function LibraryRoute() {
@@ -16,6 +17,9 @@ export default function LibraryRoute() {
           onCardFavourite={title => console.log("→ favourite", title)}
           onCardDownload={title => console.log("→ download", title)}
         />
+      }
+      right={
+        <DemoContentRightAside contentType="video" mock={MOCK_VIDEO_PAGE} />
       }
     />
   )

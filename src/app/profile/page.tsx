@@ -1,8 +1,9 @@
 "use client"
 
 import { useRouter } from "next/navigation"
-import { AppPage } from "@/components/AppShell"
+import { AppPage, DemoContentRightAside } from "@/components/AppShell"
 import { ProfilePage } from "@/components/Profile"
+import { MOCK_VIDEO_PAGE } from "@/components/ContentPage/mock-data"
 
 export default function ProfileRoute() {
   const router = useRouter()
@@ -35,6 +36,9 @@ export default function ProfileRoute() {
           onLike={id => console.log("→ like", id)}
           onBoost={id => console.log("→ boost", id)}
         />
+      }
+      right={
+        <DemoContentRightAside contentType="video" mock={MOCK_VIDEO_PAGE} />
       }
     />
   )

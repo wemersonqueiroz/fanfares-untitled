@@ -39,8 +39,8 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="min-h-full bg-app-bg scrollbar-hide">
-        <div className="max-w-[1728px] mx-auto min-h-full flex flex-col">
+      <body className="min-h-full bg-app-bg flex justify-center scrollbar-hide">
+        <div className="w-full max-w-[1728px] min-h-full flex flex-col">
           {children}
         </div>
       </body>

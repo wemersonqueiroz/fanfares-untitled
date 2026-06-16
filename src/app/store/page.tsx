@@ -1,9 +1,10 @@
 "use client"
 
 import { useState } from "react"
-import { AppPage } from "@/components/AppShell"
+import { AppPage, DemoContentRightAside } from "@/components/AppShell"
 import { MyStore } from "@/components/MyStore"
 import { MOCK_STORE_COLLECTIONS, type StoreCollection } from "@/components/MyStore/mock-data"
+import { MOCK_VIDEO_PAGE } from "@/components/ContentPage/mock-data"
 
 export default function StorePage() {
   const [collections, setCollections] = useState<StoreCollection[]>(MOCK_STORE_COLLECTIONS)
@@ -21,6 +22,9 @@ export default function StorePage() {
           onAddItems={id => console.log("→ add items to collection", id)}
           onShowAll={id => console.log("→ show all for collection", id)}
         />
+      }
+      right={
+        <DemoContentRightAside contentType="video" mock={MOCK_VIDEO_PAGE} />
       }
     />
   )

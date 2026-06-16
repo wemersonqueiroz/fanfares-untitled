@@ -1,6 +1,7 @@
 "use client"
 
-import { AppPage } from "@/components/AppShell"
+import { AppPage, DemoContentRightAside } from "@/components/AppShell"
+import { MOCK_VIDEO_PAGE } from "@/components/ContentPage/mock-data"
 import { WishlistPage } from "@/components/Wishlist"
 
 export default function WishlistRoute() {
@@ -14,6 +15,9 @@ export default function WishlistRoute() {
           onCardOptions={title => console.log("→ options", title)}
           onCardWishlist={title => console.log("→ remove from wishlist", title)}
         />
+      }
+      right={
+        <DemoContentRightAside contentType="video" mock={MOCK_VIDEO_PAGE} />
       }
     />
   )

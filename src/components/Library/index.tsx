@@ -4,6 +4,7 @@ import { useState } from "react"
 import { cx } from "@/utils/cx"
 import { BrowseCard, BrowseSection } from "@/components/BrowseCard"
 import { CategoryPillsRow } from "@/components/CategoryPillsRow"
+import { RoutePageTitle } from "@/components/RoutePageTitle"
 import { SearchInput } from "@/components/SearchInput"
 import { SegmentedControl } from "@/components/SegmentedControl"
 import { SortDropdown, DEFAULT_BROWSE_SORT_OPTIONS } from "@/components/SortDropdown"
@@ -50,9 +51,7 @@ export function LibraryPage({
 
   return (
     <div className={cx("flex flex-col gap-8", className)}>
-      <h1 className="text-heading-section-strong text-text-primary shrink-0">
-        My Library
-      </h1>
+      <RoutePageTitle title="My Library" />
 
       <div className="flex flex-col gap-8 shrink-0">
         <CategoryPillsRow

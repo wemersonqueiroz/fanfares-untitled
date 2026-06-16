@@ -6,6 +6,7 @@ import { cx } from "@/utils/cx"
 import { BrowseCard, BrowseSection } from "@/components/BrowseCard"
 import { Button } from "@/components/Button"
 import { CategoryPillsRow } from "@/components/CategoryPillsRow"
+import { RoutePageTitle } from "@/components/RoutePageTitle"
 import { SearchInput } from "@/components/SearchInput"
 import { SegmentedControl } from "@/components/SegmentedControl"
 import { SortDropdown, DEFAULT_BROWSE_SORT_OPTIONS } from "@/components/SortDropdown"
@@ -48,9 +49,7 @@ export function ExplorePage({
 
   return (
     <div className={cx("flex flex-col gap-8", className)}>
-      <h1 className="text-heading-section-strong text-text-primary shrink-0">
-        Explore
-      </h1>
+      <RoutePageTitle title="Explore" />
 
       <div className="flex flex-col gap-8 shrink-0">
         <CategoryPillsRow
