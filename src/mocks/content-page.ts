@@ -1,15 +1,11 @@
-import type { ContentPageProps } from "./index"
-import type { CommentData } from "./ContentPageBottom"
-import type { NotePageProps } from "./NotePage"
-import type { ArticlePageProps } from "./ArticlePage"
-import type { VideoPageProps } from "./VideoPage"
-import type { SeriesSeason } from "./SeriesEpisodeGrid"
-
-// Picsum helpers — deterministic images by seed
-const sq   = (seed: string) => `https://picsum.photos/seed/${seed}/400/400`
-const wide = (seed: string) => `https://picsum.photos/seed/${seed}/900/400`
-const vid  = (seed: string) => `https://picsum.photos/seed/${seed}/1280/720`
-const av   = (seed: string) => `https://picsum.photos/seed/${seed}/100/100`
+import type { ContentPageProps } from "@/components/ContentPage"
+import type { CommentData } from "@/components/ContentPage/ContentPageBottom"
+import type { NotePageProps } from "@/components/ContentPage/NotePage"
+import type { ArticlePageProps } from "@/components/ContentPage/ArticlePage"
+import type { VideoPageProps } from "@/components/ContentPage/VideoPage"
+import type { SeriesSeason } from "@/components/ContentPage/SeriesEpisodeGrid"
+// `wide` here historically returned 900×400, which is now `wideHero` in the shared module.
+import { sq, wideHero as wide, vid, av } from "./picsum"
 
 /**
  * Mock player state — simulates active playback at chapter 2.
@@ -40,7 +36,7 @@ export const MOCK_COMMENTS: CommentData[] = [
       "Chapter 1 absolutely blew me away — the production quality is on another level. " +
       "Simon's pacing keeps you hooked from the very first minute. Highly recommend!",
     timestamp: "7 hours ago",
-    reactions: { replies: 3, shares: 12, likes: 48, boosts: 9 },
+    reactions: { replies: 3, shares: 12, likes: 48, zaps: 9 },
     replies: [
       {
         id: "c-1-r1",
@@ -51,7 +47,7 @@ export const MOCK_COMMENTS: CommentData[] = [
         },
         content: "Completely agree — the sound design in the intro alone is worth the price.",
         timestamp: "5 hours ago",
-        reactions: { replies: 0, shares: 2, likes: 17, boosts: 3 },
+        reactions: { replies: 0, shares: 2, likes: 17, zaps: 3 },
       },
       {
         id: "c-1-r2",
@@ -64,7 +60,7 @@ export const MOCK_COMMENTS: CommentData[] = [
           "I listened to it twice on my commute. Simon's voice is so calming yet engaging. " +
           "Can't wait for chapter 3 to unlock!",
         timestamp: "3 hours ago",
-        reactions: { replies: 0, shares: 4, likes: 22, boosts: 5 },
+        reactions: { replies: 0, shares: 4, likes: 22, zaps: 5 },
       },
       {
         id: "c-1-r3",
@@ -72,9 +68,9 @@ export const MOCK_COMMENTS: CommentData[] = [
           name: "Tom Eriksen",
           avatarUrl: av("tom-eriksen"),
         },
-        content: "Boosted this one — deserves way more attention 🔥",
+        content: "Zapped this one — deserves way more attention 🔥",
         timestamp: "1 hour ago",
-        reactions: { replies: 0, shares: 1, likes: 8, boosts: 2 },
+        reactions: { replies: 0, shares: 1, likes: 8, zaps: 2 },
       },
     ],
   },
@@ -89,7 +85,7 @@ export const MOCK_COMMENTS: CommentData[] = [
       "Anyone else notice how each chapter title perfectly hints at the arc inside? " +
       "\"Tonic & Maximalism\" felt like an overture for the whole book.",
     timestamp: "1 day ago",
-    reactions: { replies: 1, shares: 7, likes: 31, boosts: 6 },
+    reactions: { replies: 1, shares: 7, likes: 31, zaps: 6 },
     replies: [
       {
         id: "c-2-r1",
@@ -102,7 +98,7 @@ export const MOCK_COMMENTS: CommentData[] = [
           "Yes! The naming is intentional — Simon explained in an interview that each title is a " +
           "musical metaphor for the emotional journey of that chapter.",
         timestamp: "20 hours ago",
-        reactions: { replies: 0, shares: 3, likes: 14, boosts: 1 },
+        reactions: { replies: 0, shares: 3, likes: 14, zaps: 1 },
       },
     ],
   },
@@ -117,7 +113,7 @@ export const MOCK_COMMENTS: CommentData[] = [
       "Just unlocked all six chapters — the bundle deal is insane value. " +
       "\"The Silence Between Notes\" is going to be my weekend listen.",
     timestamp: "2 days ago",
-    reactions: { replies: 0, shares: 5, likes: 19, boosts: 4 },
+    reactions: { replies: 0, shares: 5, likes: 19, zaps: 4 },
   },
   {
     id: "c-4",
@@ -129,7 +125,7 @@ export const MOCK_COMMENTS: CommentData[] = [
       "The immersive audio mixing really shines on headphones. " +
       "I closed my eyes during chapter 2 and felt like I was inside the story.",
     timestamp: "3 days ago",
-    reactions: { replies: 2, shares: 9, likes: 63, boosts: 14 },
+    reactions: { replies: 2, shares: 9, likes: 63, zaps: 14 },
     replies: [
       {
         id: "c-4-r1",
@@ -140,7 +136,7 @@ export const MOCK_COMMENTS: CommentData[] = [
         },
         content: "Same! The binaural effect on the dialogue is something else entirely.",
         timestamp: "2 days ago",
-        reactions: { replies: 0, shares: 2, likes: 11, boosts: 2 },
+        reactions: { replies: 0, shares: 2, likes: 11, zaps: 2 },
       },
       {
         id: "c-4-r2",
@@ -153,7 +149,7 @@ export const MOCK_COMMENTS: CommentData[] = [
           "For anyone wondering — AirPods Pro in transparency mode is the move. " +
           "Absolutely cinematic.",
         timestamp: "1 day ago",
-        reactions: { replies: 0, shares: 4, likes: 27, boosts: 5 },
+        reactions: { replies: 0, shares: 4, likes: 27, zaps: 5 },
       },
     ],
   },
@@ -190,7 +186,7 @@ export const MOCK_AUDIOBOOK_PAGE: Omit<
   | "onComment"
   | "onShare"
   | "onLike"
-  | "onBoost"
+  | "onZap"
   | "onPostClick"
   | "onViewProfile"
   | "onSettingsClick"
@@ -199,7 +195,7 @@ export const MOCK_AUDIOBOOK_PAGE: Omit<
   | "onCommentReply"
   | "onCommentShare"
   | "onCommentLike"
-  | "onCommentBoost"
+  | "onCommentZap"
   | "onCommentOptions"
 > = {
   contentType: "audiobook",
@@ -228,7 +224,7 @@ export const MOCK_AUDIOBOOK_PAGE: Omit<
     comments: 64,
     shares: 31,
     likes: 4200,
-    boosts: 156,
+    zaps: 156,
   },
 
   chapters: [
@@ -334,13 +330,13 @@ export const MOCK_PODCAST_PAGE: Omit<
   | "onComment"
   | "onShare"
   | "onLike"
-  | "onBoost"
+  | "onZap"
   | "onPostClick"
   | "onPostReply"
   | "onCommentReply"
   | "onCommentShare"
   | "onCommentLike"
-  | "onCommentBoost"
+  | "onCommentZap"
   | "onCommentOptions"
   | "onViewProfile"
   | "onSettingsClick"
@@ -368,7 +364,7 @@ export const MOCK_PODCAST_PAGE: Omit<
     comments: 312,
     shares: 89,
     likes: 5800,
-    boosts: 241,
+    zaps: 241,
   },
 
   chapters: [
@@ -464,7 +460,7 @@ type SharedCallbackKeys =
   | "onComment"
   | "onShare"
   | "onLike"
-  | "onBoost"
+  | "onZap"
   | "onPostClick"
   | "onViewProfile"
   | "onSettingsClick"
@@ -473,7 +469,7 @@ type SharedCallbackKeys =
   | "onCommentReply"
   | "onCommentShare"
   | "onCommentLike"
-  | "onCommentBoost"
+  | "onCommentZap"
   | "onCommentOptions"
 
 /**
@@ -508,7 +504,7 @@ export const MOCK_NOTE_PAGE: Omit<NotePageProps, SharedCallbackKeys> = {
     comments: 64,
     shares: 15,
     likes: 24,
-    boosts: 67000,
+    zaps: 67000,
   },
 
   commentCount: 64,
@@ -590,7 +586,7 @@ export const MOCK_ARTICLE_PAGE: Omit<ArticlePageProps, SharedCallbackKeys> = {
     comments: 42,
     shares: 28,
     likes: 1_340,
-    boosts: 89,
+    zaps: 89,
   },
 
   commentCount: 42,
@@ -682,7 +678,7 @@ export const MOCK_VIDEO_SERIES_PAGE: Omit<ContentPageProps, SharedCallbackKeys> 
     comments: 0,
     shares: 15,
     likes: 24,
-    boosts: 67000,
+    zaps: 67000,
   },
 
   sidebarCreators: [
@@ -731,7 +727,7 @@ export const MOCK_VIDEO_PAGE: Omit<VideoPageProps, SharedCallbackKeys> = {
     comments: 128,
     shares: 47,
     likes: 3200,
-    boosts: 89,
+    zaps: 89,
   },
 
   commentCount: 128,
@@ -741,6 +737,23 @@ export const MOCK_VIDEO_PAGE: Omit<VideoPageProps, SharedCallbackKeys> = {
     { role: "Host", name: "Alex Chen" },
     { role: "Guest", name: "Priya Kumar" },
     { role: "Editor", name: "James Wright" },
+  ],
+
+  sidebarEpisodes: [
+    {
+      id: "trailer",
+      title: "Free Trailer",
+      chapterLabel: "Chapter 1",
+      duration: "08:23",
+      state: "free-trailer",
+    },
+    {
+      id: "ep-1",
+      title: "TPB - Episode 1",
+      chapterLabel: "Chapter 2",
+      duration: "08:23",
+      state: "locked",
+    },
   ],
 
   about:

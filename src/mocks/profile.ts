@@ -1,12 +1,8 @@
 import type { ContentCardProps } from "@/components/ContentCard"
 import type { BrowseCardProps } from "@/components/BrowseCard"
 
-// Picsum helpers — deterministic images by seed
-const sq = (seed: string) => `https://picsum.photos/seed/${seed}/400/400`
-const wide = (seed: string) => `https://picsum.photos/seed/${seed}/640/360`
-const book = (seed: string) => `https://picsum.photos/seed/${seed}/240/300`
-const av = (seed: string) => `https://picsum.photos/seed/${seed}/100/100`
-const bav = (seed: string) => `https://picsum.photos/seed/${seed}/200/200`
+// `bav` here historically returned 200×200, which is `avLg` in the shared module.
+import { sq, wide, book, av, avLg as bav } from "./picsum"
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -89,8 +85,8 @@ export const MOCK_ACTIVITY: ContentCardProps[] = [
         "philosophical stance on the nature of value itself.",
     },
     purchase: { state: "unlocked" },
-    social: { comments: 43, shares: 88, likes: 620, boosts: 21 },
-    topBooster: { name: "Sats King", amount: 15000, avatarUrl: av("satsking") },
+    social: { comments: 43, shares: 88, likes: 620, zaps: 21 },
+    topZapper: { name: "Sats King", amount: 15000, avatarUrl: av("satsking") },
     supporterAvatarUrls: [av("pa1s1"), av("pa1s2"), av("pa1s3")],
   },
   {
@@ -108,7 +104,7 @@ export const MOCK_ACTIVITY: ContentCardProps[] = [
       episodeCount: 14,
     },
     purchase: { state: "free" },
-    social: { comments: 19, shares: 34, likes: 280, boosts: 8 },
+    social: { comments: 19, shares: 34, likes: 280, zaps: 8 },
     supporterAvatarUrls: [av("pa2s1"), av("pa2s2")],
   },
   {
@@ -125,8 +121,8 @@ export const MOCK_ACTIVITY: ContentCardProps[] = [
       pageCount: 312,
     },
     purchase: { state: "locked", price: "5,000 sats" },
-    social: { comments: 67, shares: 110, likes: 1450, boosts: 55 },
-    topBooster: {
+    social: { comments: 67, shares: 110, likes: 1450, zaps: 55 },
+    topZapper: {
       name: "V. Buterin",
       amount: 80000,
       avatarUrl: av("vbuterin"),
@@ -147,7 +143,7 @@ export const MOCK_ACTIVITY: ContentCardProps[] = [
       trackCount: 9,
     },
     purchase: { state: "unlocked" },
-    social: { comments: 31, shares: 57, likes: 810, boosts: 27 },
+    social: { comments: 31, shares: 57, likes: 810, zaps: 27 },
     supporterAvatarUrls: [av("pa4s1"), av("pa4s2"), av("pa4s3")],
   },
 ]

@@ -1,25 +1,26 @@
 "use client"
 
-import type { FC, ReactNode, SVGProps } from "react"
 import Link from "next/link"
 import {
-  BookOpen01,
   Bookmark,
   DotsVertical,
-  Headphones01,
   Lightning01,
   Lock02,
-  Microphone01,
-  MusicNote01,
-  Play,
-  Rss01,
 } from "@untitledui/icons"
 import { cx } from "@/utils/cx"
 import { Avatar, AvatarGroup } from "@/components/Avatar"
 import { CreatorByline } from "@/components/CreatorByline"
-import { ContentTypeTag } from "./ContentTypeTag"
-import type { ContentType } from "./ContentTypeTag"
+import { AlbumBody } from "./AlbumBody"
+import { ArticleBody } from "./ArticleBody"
+import { AudiobookBody } from "./AudiobookBody"
+import { BookBody } from "./BookBody"
 import { CardSocialButtons } from "./CardSocialButtons"
+import { CollectionBody } from "./CollectionBody"
+import { ContentTypeTag } from "./ContentTypeTag"
+import { fmtAmount, GlassBtn } from "./internals"
+import { PodcastBody } from "./PodcastBody"
+import { SongBody } from "./SongBody"
+import { VideoBody } from "./VideoBody"
 
 // ── Public types ──────────────────────────────────────────────────────────────
 
@@ -37,10 +38,10 @@ export type CardPurchase =
   | { state: "locked"; price?: string; label?: string }
   | { state: "unlocked" }
 
-export type CardBooster = {
+export type CardZapper = {
   name: string
   avatarUrl?: string
-  /** Raw boost amount (e.g. sats). Displayed as formatted number. */
+  /** Raw zap amount (e.g. sats). Displayed as formatted number. */
   amount: number
 }
 
@@ -120,22 +121,24 @@ export type ContentCardProps = {
     comments: number
     shares: number
     likes: number
-    boosts: number
+    zaps: number
   }
-  /** Primary booster shown in the boost pill */
-  topBooster?: CardBooster
+  /** Primary zapper shown in the zap pill */
+  topZapper?: CardZapper
   /** Avatar URLs for the supporter group (up to ~5; overflow shown as +N) */
   supporterAvatarUrls?: (string | undefined)[]
   /** Whether the current user has wishlisted this card */
   isWishlisted?: boolean
   // ── Callbacks ─────────────────────────────────────────────────────────────
+  /** Fires when the centered play button on the cover thumbnail is clicked. */
+  onPlay?: () => void
   onUnlock?: () => void
   onWishlist?: () => void
   onOptions?: () => void
   onComment?: () => void
   onShare?: () => void
   onLike?: () => void
-  onBoost?: () => void
+  onZap?: () => void
   /** Fires when the card body/title area is clicked (not on action buttons) */
   onCardClick?: () => void
   /**
@@ -146,349 +149,96 @@ export type ContentCardProps = {
   className?: string
 }
 
-// ── Internals ─────────────────────────────────────────────────────────────────
-
-type IconComp = FC<SVGProps<SVGSVGElement> & { size?: number; color?: string }>
-
-function fmtAmount(n: number): string {
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`
-  if (n >= 1_000) return `${Math.round(n / 1_000)}K`
-  return n.toLocaleString()
-}
-
-/** Blurred glass mini button — 22 × 22 px, used on thumbnail overlays */
-function GlassBtn({
-  icon: Icon,
-  label,
-  active,
-  onClick,
-  className,
-}: {
-  icon: IconComp
-  label: string
-  active?: boolean
-  onClick?: () => void
-  className?: string
-}) {
-  return (
-    <button
-      type="button"
-      onClick={e => {
-        e.stopPropagation()
-        onClick?.()
-      }}
-      aria-label={label}
-      aria-pressed={active}
-      className={cx(
-        "flex items-center justify-center size-overlay-btn rounded-md cursor-pointer shrink-0",
-        "bg-overlay-btn backdrop-blur-sm",
-        "transition-opacity duration-150 hover:opacity-80",
-        "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/40",
-        className
-      )}>
-      <Icon
-        size={13}
-        color={active ? "var(--color-brand-500)" : "var(--color-text-primary)"}
-        aria-hidden="true"
-      />
-    </button>
-  )
-}
-
-// Avatar and AvatarGroup are imported from @/components/Avatar
-
-// ── Media thumbnail (Video / VideoShow / Podcast preview) ─────────────────────
-
-function MediaThumbnail({
-  url,
-  contentType,
-  isLocked,
-  showPlay = false,
-}: {
-  url?: string
-  contentType: ContentType
-  isLocked: boolean
-  showPlay?: boolean
-}) {
-  const GRADIENT: Partial<Record<ContentType, string>> = {
-    video: "from-[#12192a] to-[#080d14]",
-    "video-show": "from-[#12192a] to-[#080d14]",
-    podcast: "from-[#1a1226] to-[#0e0a18]",
-    "podcast-show": "from-[#1a1226] to-[#0e0a18]",
-  }
-  const gradient = GRADIENT[contentType] ?? "from-[#141820] to-[#080a0d]"
-
-  return (
-    <div className="relative w-full aspect-video rounded-xl overflow-hidden">
-      {url ? (
-        <img src={url} alt="" className="size-full object-cover" />
-      ) : (
-        <div className={cx("size-full bg-gradient-to-br", gradient)} />
-      )}
-
-      {/* Lock overlay */}
-      {isLocked && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-xs">
-          <div className="flex items-center justify-center size-12 rounded-full bg-overlay-btn backdrop-blur-sm">
-            <Lock02 size={22} color="white" aria-hidden="true" />
-          </div>
-        </div>
-      )}
-
-      {/* Play button — only when unlocked/free */}
-      {showPlay && !isLocked && (
-        <button
-          type="button"
-          aria-label="Play"
-          onClick={e => e.stopPropagation()}
-          className={cx(
-            "absolute bottom-3 left-3",
-            "flex items-center justify-center size-10 rounded-full cursor-pointer",
-            "bg-overlay-btn backdrop-blur-sm",
-            "hover:opacity-80 transition-opacity duration-150"
-          )}>
-          <Play size={18} color="white" aria-hidden="true" />
-        </button>
-      )}
-    </div>
-  )
-}
-
-// ── Cover + metadata side-by-side (Audiobook / Book / Song / Album / Podcast) ─
-
-function CoverWithMeta({
-  coverUrl,
-  gradient,
-  isLocked,
-  children,
-}: {
-  coverUrl?: string
-  gradient: string
-  isLocked: boolean
-  children: ReactNode
-}) {
-  return (
-    <div className="flex items-start gap-4">
-      {/* Cover square */}
-      <div
-        className={cx(
-          "relative shrink-0 size-content-thumb rounded-xl overflow-hidden",
-          isLocked && "opacity-60"
-        )}>
-        {coverUrl ? (
-          <img src={coverUrl} alt="" className="size-full object-cover" />
-        ) : (
-          <div className={cx("size-full bg-gradient-to-br", gradient)} />
-        )}
-        {isLocked && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black/40">
-            <Lock02 size={14} color="white" aria-hidden="true" />
-          </div>
-        )}
-      </div>
-      {/* Meta text */}
-      <div className="flex flex-col gap-1 min-w-0 flex-1 pt-1">{children}</div>
-    </div>
-  )
-}
-
-function MetaLabel({
-  icon: Icon,
-  children,
-}: {
-  icon: IconComp
-  children: ReactNode
-}) {
-  return (
-    <div className="flex items-center gap-1.5">
-      <Icon size={12} color="var(--color-text-tertiary)" aria-hidden="true" />
-      <span className="text-xs text-text-tertiary uppercase font-medium tracking-wide">
-        {children}
-      </span>
-    </div>
-  )
-}
-
-// ── Per-type body renderer ────────────────────────────────────────────────────
+// ── Per-type body dispatcher ─────────────────────────────────────────────────
 
 function CardBody({
   content,
   isLocked,
+  price,
+  onPlay,
 }: {
   content: CardContent
   isLocked: boolean
+  /** Unlock price — surfaced as a pill on locked thumbnails. */
+  price?: string
+  onPlay?: () => void
 }) {
   switch (content.type) {
-    // ── Video / Video Show ──────────────────────────────────────────────────
     case "video":
     case "video-show":
       return (
-        <MediaThumbnail
-          url={content.thumbnailUrl}
-          contentType={content.type}
+        <VideoBody
+          type={content.type}
+          thumbnailUrl={content.thumbnailUrl}
           isLocked={isLocked}
-          showPlay={true}
+          price={price}
+          onPlay={onPlay}
         />
       )
 
-    // ── Article / Note ──────────────────────────────────────────────────────
     case "article":
-    case "note": {
-      const isNote = content.type === "note"
-      return (
-        <div
-          className={cx(
-            "relative rounded-xl overflow-hidden p-4",
-            isNote
-              ? "bg-app-note-bg border border-blue-800/30"
-              : "bg-app-card border border-app-border"
-          )}>
-          <p
-            className={cx(
-              "text-sm leading-relaxed",
-              isLocked
-                ? "line-clamp-2 text-text-tertiary"
-                : "line-clamp-5 text-text-secondary"
-            )}>
-            {content.excerpt}
-          </p>
-          {isLocked && (
-            <div className="absolute inset-x-0 bottom-0 h-12 flex items-end px-4 pb-3 bg-gradient-to-t from-app-bg to-transparent">
-              <div className="flex items-center gap-1.5 text-xs text-text-tertiary">
-                <Lock02 size={11} color="currentColor" aria-hidden="true" />
-                Unlock to read
-              </div>
-            </div>
-          )}
-        </div>
-      )
-    }
+    case "note":
+      return <ArticleBody type={content.type} excerpt={content.excerpt} isLocked={isLocked} />
 
-    // ── Podcast / Podcast Show ──────────────────────────────────────────────
     case "podcast":
     case "podcast-show":
       return (
-        <CoverWithMeta
-          coverUrl={content.thumbnailUrl}
-          gradient="from-[#1a1226] to-[#0e0a18]"
-          isLocked={isLocked}>
-          <MetaLabel
-            icon={content.type === "podcast-show" ? Rss01 : Microphone01}>
-            {content.type === "podcast-show"
-              ? "Podcast Show"
-              : "Podcast Episode"}
-          </MetaLabel>
-          {content.episodeCount !== undefined && (
-            <p className="text-sm text-text-secondary">
-              {content.episodeCount} episodes
-            </p>
-          )}
-          {content.duration && (
-            <p className="text-sm text-text-tertiary">{content.duration}</p>
-          )}
-        </CoverWithMeta>
+        <PodcastBody
+          type={content.type}
+          thumbnailUrl={content.thumbnailUrl}
+          isLocked={isLocked}
+          price={price}
+          onPlay={onPlay}
+        />
       )
 
-    // ── Audiobook ──────────────────────────────────────────────────────────
     case "audiobook":
       return (
-        <CoverWithMeta
+        <AudiobookBody
           coverUrl={content.coverUrl}
-          gradient="from-[#102a18] to-[#081710]"
-          isLocked={isLocked}>
-          <MetaLabel icon={Headphones01}>Audiobook</MetaLabel>
-          <p className="text-sm text-text-secondary">{content.duration}</p>
-          {content.narrator && (
-            <p className="text-sm text-text-tertiary">
-              Narrated by {content.narrator}
-            </p>
-          )}
-        </CoverWithMeta>
+          isLocked={isLocked}
+          price={price}
+          onPlay={onPlay}
+        />
       )
 
-    // ── Book ──────────────────────────────────────────────────────────────
     case "book":
       return (
-        <CoverWithMeta
+        <BookBody
           coverUrl={content.coverUrl}
-          gradient="from-[#2e1410] to-[#180a08]"
-          isLocked={isLocked}>
-          <MetaLabel icon={BookOpen01}>Book</MetaLabel>
-          {content.pageCount && (
-            <p className="text-sm text-text-secondary">
-              {content.pageCount} pages
-            </p>
-          )}
-        </CoverWithMeta>
+          isLocked={isLocked}
+          price={price}
+        />
       )
 
-    // ── Song ─────────────────────────────────────────────────────────────
     case "song":
       return (
-        <CoverWithMeta
+        <SongBody
           coverUrl={content.coverUrl}
-          gradient="from-[#2a1f10] to-[#170f08]"
-          isLocked={isLocked}>
-          <MetaLabel icon={MusicNote01}>Song</MetaLabel>
-          {content.album && (
-            <p className="text-sm text-text-secondary">{content.album}</p>
-          )}
-          <p className="text-sm text-text-tertiary">{content.duration}</p>
-        </CoverWithMeta>
+          isLocked={isLocked}
+          price={price}
+          onPlay={onPlay}
+        />
       )
 
-    // ── Album ─────────────────────────────────────────────────────────────
     case "album":
       return (
-        <CoverWithMeta
+        <AlbumBody
           coverUrl={content.coverUrl}
-          gradient="from-[#2a1f10] to-[#170f08]"
-          isLocked={isLocked}>
-          <MetaLabel icon={MusicNote01}>Album</MetaLabel>
-          <p className="text-sm text-text-secondary">
-            {content.trackCount} tracks
-          </p>
-        </CoverWithMeta>
+          isLocked={isLocked}
+          price={price}
+          onPlay={onPlay}
+        />
       )
 
-    // ── Collection ────────────────────────────────────────────────────────
-    case "collection": {
-      const CELL_GRADIENTS = [
-        "from-[#27115f] to-[#1a0a40]",
-        "from-[#102a56] to-[#091a38]",
-        "from-[#102a18] to-[#081710]",
-        "from-[#2a1f10] to-[#170f08]",
-      ]
+    case "collection":
       return (
-        <div className="relative aspect-video rounded-xl overflow-hidden">
-          <div className="grid grid-cols-2 grid-rows-2 size-full gap-px bg-app-border">
-            {[0, 1, 2, 3].map(i => (
-              <div
-                key={i}
-                className={cx(
-                  "overflow-hidden bg-gradient-to-br",
-                  CELL_GRADIENTS[i]
-                )}>
-                {content.coverUrls?.[i] && (
-                  <img
-                    src={content.coverUrls[i]}
-                    alt=""
-                    className="size-full object-cover"
-                  />
-                )}
-              </div>
-            ))}
-          </div>
-          {isLocked && (
-            <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-[2px]">
-              <div className="flex items-center justify-center size-12 rounded-full bg-[rgba(91,90,87,0.5)] backdrop-blur-sm">
-                <Lock02 size={22} color="white" aria-hidden="true" />
-              </div>
-            </div>
-          )}
-        </div>
+        <CollectionBody
+          coverUrls={content.coverUrls}
+          isLocked={isLocked}
+          price={price}
+        />
       )
-    }
 
     default:
       return null
@@ -502,26 +252,28 @@ export function ContentCard({
   content,
   purchase,
   social,
-  topBooster,
+  topZapper,
   supporterAvatarUrls = [],
   isWishlisted,
+  onPlay,
   onUnlock,
   onWishlist,
   onOptions,
   onComment,
   onShare,
   onLike,
-  onBoost,
+  onZap,
   onCardClick,
   href,
   className,
 }: ContentCardProps) {
   const isLocked = purchase.state === "locked"
+  const lockedPrice = purchase.state === "locked" ? purchase.price : undefined
 
   return (
     <article
       className={cx(
-        "flex flex-col gap-4 pt-4 pb-8 px-4 ",
+        "flex flex-col gap-4 pt-4 pb-4 px-0 sm:px-4",
         "bg-bg-primary sm:border sm:border-app-border rounded-xl",
         "cursor-default",
         className
@@ -536,7 +288,6 @@ export function ContentCard({
           size="md"
           nameColor="secondary"
         />
-        {/* Kebab menu */}
         <GlassBtn
           icon={DotsVertical}
           label="More options"
@@ -545,10 +296,7 @@ export function ContentCard({
       </div>
 
       {/* ── Row 2: Title + badge + wishlist + unlock ─────────────────────── */}
-      {/*   Mobile: stacked (title full-width → actions below)             */}
-      {/*   sm+:    side-by-side (current design)                          */}
       <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-3">
-        {/* Title — Link when href provided, plain heading otherwise */}
         {href ? (
           <Link
             href={href}
@@ -566,7 +314,6 @@ export function ContentCard({
             {content.title}
           </h3>
         )}
-        {/* Right cluster */}
         <div className="flex items-center gap-2 shrink-0 sm:pt-0.5">
           <ContentTypeTag type={content.type} />
           <GlassBtn
@@ -604,19 +351,18 @@ export function ContentCard({
         </p>
       )}
 
-      {/* ── Row 4: Content body ──────────────────────────────────────────── */}
-      <CardBody content={content} isLocked={isLocked} />
+      {/* ── Row 4: Content body — variant dispatcher ─────────────────────── */}
+      <CardBody content={content} isLocked={isLocked} price={lockedPrice} onPlay={onPlay} />
 
       {/* ── Row 5–6: Footer ──────────────────────────────────────────────── */}
       <div className="flex flex-col gap-2 -mb-1">
-        {/* Boost pill + supporter avatars */}
-        {(topBooster || supporterAvatarUrls.length > 0) && (
+        {(topZapper || supporterAvatarUrls.length > 0) && (
           <div className="flex items-center justify-between gap-3">
-            {topBooster ? (
+            {topZapper ? (
               <div className="flex items-center gap-2">
                 <Avatar
-                  name={topBooster.name}
-                  src={topBooster.avatarUrl}
+                  name={topZapper.name}
+                  src={topZapper.avatarUrl}
                   size="xs"
                   className="border border-black/10"
                 />
@@ -626,9 +372,9 @@ export function ContentCard({
                   aria-hidden="true"
                 />
                 <span className="text-sm font-medium text-text-primary">
-                  {fmtAmount(topBooster.amount)}
+                  {fmtAmount(topZapper.amount)}
                 </span>
-                <span className="text-xs text-text-tertiary">boosted</span>
+                <span className="text-xs text-text-tertiary">zapped</span>
               </div>
             ) : (
               <div />
@@ -639,20 +385,18 @@ export function ContentCard({
           </div>
         )}
 
-        {/* Divider */}
         <div className="border-t border-app-border" />
 
-        {/* Social buttons */}
         <div className="flex items-center justify-between">
           <CardSocialButtons
             comments={social.comments}
             shares={social.shares}
             likes={social.likes}
-            boosts={social.boosts}
+            zaps={social.zaps}
             onComment={onComment}
             onShare={onShare}
             onLike={onLike}
-            onBoost={onBoost}
+            onZap={onZap}
           />
         </div>
       </div>

@@ -2,20 +2,21 @@
 
 import { useState, type Dispatch, type FC, type SetStateAction, type SVGProps } from "react"
 import {
+  Check,
   ChevronDown,
   Download01,
   DotsVertical,
   Edit01,
-  Move,
   Play,
   Plus,
   Share06,
   Star01,
   Trash01,
+  XClose,
 } from "@untitledui/icons"
 import { cx } from "@/utils/cx"
 import { Button } from "@/components/Button"
-import type { StoreCollection, StoreItem, StoreItemType } from "./mock-data"
+import type { StoreCollection, StoreItem, StoreItemType } from "@/mocks/store"
 
 // ── Public types ──────────────────────────────────────────────────────────────
 
@@ -128,10 +129,6 @@ function StoreItemCard({
         {/* Overlay action buttons */}
         {isManaging ? (
           <>
-            {/* Drag handle — top-left */}
-            <div className="absolute top-2 left-2">
-              <GlassBtn label="Drag to reorder" Icon={Move} />
-            </div>
             {/* Delete — top-right */}
             {onRemove && (
               <div className="absolute top-2 right-2">
@@ -186,25 +183,45 @@ function CollectionSection({
   return (
     <div className="flex flex-col gap-6 w-full shrink-0">
       {/* Collection header */}
-      <div className="flex items-center justify-between w-full shrink-0">
-        <div className="flex items-center gap-2 min-w-0">
+      <div className="flex items-center justify-between w-full shrink-0 gap-2">
+        <div className="flex items-center gap-2 min-w-0 flex-1">
           {isManaging && editingTitle ? (
-            <input
-              autoFocus
-              value={draftTitle}
-              onChange={e => setDraftTitle(e.target.value)}
-              onBlur={commitRename}
-              onKeyDown={e => {
-                if (e.key === "Enter") commitRename()
-                if (e.key === "Escape") { setDraftTitle(collection.title); setEditingTitle(false) }
-              }}
-              className={cx(
-                "text-heading-section-strong text-text-primary bg-transparent border-b border-app-border",
-                "focus:outline-none focus:border-brand-500 min-w-0 w-full max-w-xs",
-              )}
-            />
+            <>
+              <input
+                autoFocus
+                value={draftTitle}
+                onChange={e => setDraftTitle(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === "Enter") commitRename()
+                  if (e.key === "Escape") { setDraftTitle(collection.title); setEditingTitle(false) }
+                }}
+                className={cx(
+                  "text-heading-list-item-strong sm:text-heading-section-strong text-text-primary bg-transparent",
+                  "p-0 border-0 border-b border-app-border",
+                  "focus:outline-none focus:border-brand-500 min-w-0 flex-1",
+                )}
+              />
+              <button
+                type="button"
+                aria-label="Save collection name"
+                onMouseDown={e => e.preventDefault()}
+                onClick={commitRename}
+                className="flex items-center justify-center size-7 rounded-md text-text-tertiary hover:text-brand-500 hover:bg-app-card-active transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/50 shrink-0"
+              >
+                <Check size={16} color="currentColor" aria-hidden="true" className="shrink-0" />
+              </button>
+              <button
+                type="button"
+                aria-label="Cancel rename"
+                onMouseDown={e => e.preventDefault()}
+                onClick={() => { setDraftTitle(collection.title); setEditingTitle(false) }}
+                className="flex items-center justify-center size-7 rounded-md text-text-tertiary hover:text-text-primary hover:bg-app-card-active transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/50 shrink-0"
+              >
+                <XClose size={16} color="currentColor" aria-hidden="true" className="shrink-0" />
+              </button>
+            </>
           ) : (
-            <h2 className="text-heading-section-strong text-text-primary truncate">
+            <h2 className="text-heading-list-item-strong sm:text-heading-section-strong text-text-primary truncate border-b border-transparent">
               {collection.title}
             </h2>
           )}

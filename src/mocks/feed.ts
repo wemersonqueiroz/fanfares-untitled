@@ -1,9 +1,7 @@
 import type { ContentCardProps } from "@/components/ContentCard"
 
-// Picsum helpers — deterministic images by seed
-const sq = (seed: string) => `https://picsum.photos/seed/${seed}/400/400`
-const vid = (seed: string) => `https://picsum.photos/seed/${seed}/640/360`
-const av = (seed: string) => `https://picsum.photos/seed/${seed}/100/100`
+// `vid` here historically returned 640×360, which is `wide` in the shared module.
+import { sq, wide as vid, av } from "./picsum"
 
 /**
  * Mock feed cards — one of each supported content type.
@@ -31,8 +29,8 @@ export const MOCK_CARDS: ContentCardProps[] = [
       state: "locked",
       price: "1,200 sats",
     },
-    social: { comments: 128, shares: 47, likes: 3200, boosts: 89 },
-    topBooster: { name: "Alex K.", amount: 50000, avatarUrl: av("alexk") },
+    social: { comments: 128, shares: 47, likes: 3200, zaps: 89 },
+    topZapper: { name: "Alex K.", amount: 50000, avatarUrl: av("alexk") },
     supporterAvatarUrls: [
       av("sup1"),
       av("sup2"),
@@ -63,8 +61,8 @@ export const MOCK_CARDS: ContentCardProps[] = [
         "This architecture allows the network to handle millions of transactions per second while inheriting Bitcoin's security guarantees.",
     },
     purchase: { state: "unlocked" },
-    social: { comments: 56, shares: 142, likes: 891, boosts: 34 },
-    topBooster: {
+    social: { comments: 56, shares: 142, likes: 891, zaps: 34 },
+    topZapper: {
       name: "B. Nakamoto",
       amount: 25000,
       avatarUrl: av("nakamoto"),
@@ -89,7 +87,7 @@ export const MOCK_CARDS: ContentCardProps[] = [
       duration: "58:03",
     },
     purchase: { state: "free" },
-    social: { comments: 72, shares: 28, likes: 540, boosts: 12 },
+    social: { comments: 72, shares: 28, likes: 540, zaps: 12 },
     supporterAvatarUrls: [av("sup9"), av("sup10")],
   },
 
@@ -114,8 +112,8 @@ export const MOCK_CARDS: ContentCardProps[] = [
       state: "locked",
       price: "3,500 sats",
     },
-    social: { comments: 204, shares: 89, likes: 4700, boosts: 156 },
-    topBooster: { name: "Maria L.", amount: 75000, avatarUrl: av("marial") },
+    social: { comments: 204, shares: 89, likes: 4700, zaps: 156 },
+    topZapper: { name: "Maria L.", amount: 75000, avatarUrl: av("marial") },
     supporterAvatarUrls: [
       av("sup11"),
       av("sup12"),
@@ -145,7 +143,7 @@ export const MOCK_CARDS: ContentCardProps[] = [
         "cares about the technology rather than the clout.",
     },
     purchase: { state: "free" },
-    social: { comments: 33, shares: 19, likes: 287, boosts: 8 },
+    social: { comments: 33, shares: 19, likes: 287, zaps: 8 },
   },
 
   // ── 6. Book (locked) ─────────────────────────────────────────────────────
@@ -169,8 +167,8 @@ export const MOCK_CARDS: ContentCardProps[] = [
       state: "locked",
       price: "2,100 sats",
     },
-    social: { comments: 98, shares: 63, likes: 2100, boosts: 77 },
-    topBooster: {
+    social: { comments: 98, shares: 63, likes: 2100, zaps: 77 },
+    topZapper: {
       name: "S. Ammous Fan",
       amount: 100000,
       avatarUrl: av("sammous"),
@@ -196,8 +194,8 @@ export const MOCK_CARDS: ContentCardProps[] = [
       album: "Neon Solstice",
     },
     purchase: { state: "unlocked" },
-    social: { comments: 14, shares: 31, likes: 623, boosts: 22 },
-    topBooster: { name: "DJ Helix", amount: 15000, avatarUrl: av("djhelix") },
+    social: { comments: 14, shares: 31, likes: 623, zaps: 22 },
+    topZapper: { name: "DJ Helix", amount: 15000, avatarUrl: av("djhelix") },
     supporterAvatarUrls: [av("sup21"), av("sup22")],
   },
 
@@ -221,8 +219,8 @@ export const MOCK_CARDS: ContentCardProps[] = [
       state: "locked",
       price: "5,000 sats",
     },
-    social: { comments: 41, shares: 18, likes: 934, boosts: 51 },
-    topBooster: { name: "BitBeats", amount: 30000, avatarUrl: av("bitbeats") },
+    social: { comments: 41, shares: 18, likes: 934, zaps: 51 },
+    topZapper: { name: "BitBeats", amount: 30000, avatarUrl: av("bitbeats") },
     supporterAvatarUrls: [av("sup23"), av("sup24"), av("sup25")],
   },
 
@@ -248,7 +246,7 @@ export const MOCK_CARDS: ContentCardProps[] = [
       itemCount: 18,
     },
     purchase: { state: "free" },
-    social: { comments: 67, shares: 210, likes: 1540, boosts: 43 },
+    social: { comments: 67, shares: 210, likes: 1540, zaps: 43 },
     supporterAvatarUrls: [av("sup26"), av("sup27"), av("sup28"), av("sup29")],
   },
 
@@ -270,8 +268,8 @@ export const MOCK_CARDS: ContentCardProps[] = [
       episodeCount: 312,
     },
     purchase: { state: "free" },
-    social: { comments: 189, shares: 94, likes: 5600, boosts: 228 },
-    topBooster: { name: "zk Maxi", amount: 200000, avatarUrl: av("zkmaxi") },
+    social: { comments: 189, shares: 94, likes: 5600, zaps: 228 },
+    topZapper: { name: "zk Maxi", amount: 200000, avatarUrl: av("zkmaxi") },
     supporterAvatarUrls: [
       av("sup30"),
       av("sup31"),

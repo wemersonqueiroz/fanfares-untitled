@@ -17,6 +17,8 @@ import {
   Star01,
 } from "@untitledui/icons"
 import { cx } from "@/utils/cx"
+import { coverAspectFor } from "@/utils/coverAspect"
+import type { ContentType } from "@/components/ContentCard/ContentTypeTag"
 
 // ── Public types ──────────────────────────────────────────────────────────────
 
@@ -107,24 +109,28 @@ const BADGE_SCHEME: Record<BadgeConfig["scheme"], string> = {
 }
 
 /**
- * Cover aspect ratio per variant.
- * - Wide: article is extra-wide (~5:2), podcast/video variants are 16:9
- * - Portrait: book is portrait (4:5)
- * - Everything else: square
+ * BrowseVariant → ContentType for aspect lookup. `creator` has no ContentType
+ * equivalent (renders as a round avatar) and `podcast-episode*` collapse into
+ * the shared `podcast` aspect — both 16:9.
  */
-const COVER_ASPECT: Record<BrowseVariant, string> = {
-  article:                    "aspect-[5/2]",
-  "podcast-episode":          "aspect-video",
-  "podcast-episode-no-video": "aspect-video",
-  "podcast-show":             "aspect-video",
-  video:                      "aspect-video",
-  "video-show":               "aspect-video",
-  book:                       "aspect-[4/5]",
-  audiobook:                  "aspect-square",
-  song:                       "aspect-square",
-  album:                      "aspect-square",
-  creator:                    "aspect-square",
-  collection:                 "aspect-square",
+const VARIANT_TO_CONTENT_TYPE: Record<Exclude<BrowseVariant, "creator">, ContentType> = {
+  article:                    "article",
+  "podcast-episode":          "podcast",
+  "podcast-episode-no-video": "podcast",
+  "podcast-show":             "podcast-show",
+  video:                      "video",
+  "video-show":               "video-show",
+  book:                       "book",
+  audiobook:                  "audiobook",
+  song:                       "song",
+  album:                      "album",
+  collection:                 "collection",
+}
+
+/** Aspect class for a browse variant — pulls from the shared `coverAspectFor` map. */
+function coverAspectForBrowse(variant: BrowseVariant): string {
+  if (variant === "creator") return "aspect-square"
+  return coverAspectFor(VARIANT_TO_CONTENT_TYPE[variant])
 }
 
 /** Wide-cover variants — get extra width at lg/md */
@@ -320,7 +326,7 @@ export function BrowseCard({
         className={cx(
           "relative w-full overflow-hidden border border-black/10",
           isCreator ? "rounded-full" : "rounded-md",
-          COVER_ASPECT[variant]
+          coverAspectForBrowse(variant)
         )}>
         {/* Background — image or gradient placeholder */}
         {coverUrl ? (

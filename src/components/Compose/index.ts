@@ -30,3 +30,6 @@ export type { CreatorsFieldProps, Creator } from "./CreatorsField"
 
 export { RssFeedField } from "./RssFeedField"
 export type { RssFeedFieldProps } from "./RssFeedField"
+
+export { useTagsField } from "./useTagsField"
+export type { UseTagsFieldResult } from "./useTagsField"

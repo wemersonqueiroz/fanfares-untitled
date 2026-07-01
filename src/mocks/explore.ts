@@ -1,10 +1,7 @@
 import type { BrowseCardProps } from "@/components/BrowseCard"
 
-// Picsum helpers — deterministic images by seed
-const sq = (seed: string) => `https://picsum.photos/seed/${seed}/400/400`
-const wide = (seed: string) => `https://picsum.photos/seed/${seed}/640/360`
-const book = (seed: string) => `https://picsum.photos/seed/${seed}/240/300`
-const av = (seed: string) => `https://picsum.photos/seed/${seed}/200/200`
+// `av` here historically returned 200×200, which is now `avLg` in the shared module.
+import { sq, wide, book, avLg as av } from "./picsum"
 
 // ── Category pills ─────────────────────────────────────────────────────────────
 

@@ -1,5 +1,3 @@
-"use client"
-
 import type { FC, SVGProps } from "react"
 import {
   BookOpen01,

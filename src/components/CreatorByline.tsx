@@ -1,5 +1,3 @@
-"use client"
-
 import { cx } from "@/utils/cx"
 import { Avatar } from "@/components/Avatar"
 

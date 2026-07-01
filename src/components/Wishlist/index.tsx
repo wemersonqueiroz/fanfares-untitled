@@ -11,7 +11,7 @@ import {
   WISHLIST_CATEGORIES,
   WISHLIST_SECTIONS,
   type WishlistCategory,
-} from "./mock-data"
+} from "@/mocks/wishlist"
 
 // ── Public types ──────────────────────────────────────────────────────────────
 

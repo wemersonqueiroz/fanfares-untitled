@@ -26,7 +26,7 @@ import type {
   TabDefinition,
 } from "./ContentPageBottom"
 import type { SeriesSeason } from "./SeriesEpisodeGrid"
-import type { SidebarCreator, SidebarInfoItem } from "@/components/RightSidebar"
+import type { SidebarCreator, SidebarEpisode, SidebarInfoItem } from "@/components/RightSidebar"
 import { ContentRightAside } from "./ContentRightAside"
 import { PageColumns } from "@/components/PageColumns"
 import { AudioActionsBar } from "./AudioActionsBar"
@@ -104,6 +104,8 @@ export type ContentPageProps = {
 
   // ── Right sidebar ─────────────────────────────────────────────────────────
   sidebarCreators?: SidebarCreator[]
+  /** Chapter/episode list rendered in the right sidebar (between title and Creators). */
+  sidebarEpisodes?: SidebarEpisode[]
   about?: string
   infoItems?: SidebarInfoItem[]
 
@@ -116,7 +118,7 @@ export type ContentPageProps = {
     comments: number
     shares: number
     likes: number
-    boosts: number
+    zaps: number
   }
 
   // ── Audio player state (optional — omit to hide the player bar) ───────────
@@ -151,12 +153,12 @@ export type ContentPageProps = {
   onComment?: () => void
   onShare?: () => void
   onLike?: () => void
-  onBoost?: () => void
+  onZap?: () => void
   onPostReply?: (content: string) => void
   onCommentReply?: (commentId: string) => void
   onCommentShare?: (commentId: string) => void
   onCommentLike?: (commentId: string) => void
-  onCommentBoost?: (commentId: string) => void
+  onCommentZap?: (commentId: string) => void
   onCommentOptions?: (commentId: string) => void
   onBack?: () => void
   onViewProfile?: () => void
@@ -242,6 +244,7 @@ export function ContentPage({
   comments = [],
   currentUserAvatarUrl,
   sidebarCreators = [],
+  sidebarEpisodes,
   about,
   infoItems = [],
   tags = [],
@@ -273,12 +276,12 @@ export function ContentPage({
   onComment,
   onShare,
   onLike,
-  onBoost,
+  onZap,
   onPostReply,
   onCommentReply,
   onCommentShare,
   onCommentLike,
-  onCommentBoost,
+  onCommentZap,
   onCommentOptions,
   onBack,
   onViewProfile,
@@ -305,7 +308,7 @@ export function ContentPage({
         comments: c.reactions.replies,
         shares: c.reactions.shares,
         likes: c.reactions.likes,
-        boosts: c.reactions.boosts,
+        zaps: c.reactions.zaps,
       },
     }),
     []
@@ -322,7 +325,7 @@ export function ContentPage({
         comments: social.comments,
         shares: social.shares,
         likes: social.likes,
-        boosts: social.boosts,
+        zaps: social.zaps,
       },
     }),
     [creator, title, social]
@@ -354,9 +357,6 @@ export function ContentPage({
       : purchase.state === "locked"
         ? "locked"
         : "free"
-
-  const priceForSidebar =
-    purchase.state === "locked" ? purchase.price : undefined
 
   const isPlaying = player?.isPlaying ?? false
   const handlePlayPause = isPlaying ? onPause : onPlay
@@ -526,7 +526,7 @@ export function ContentPage({
                 creators={sidebarCreators}
                 tags={tags}
                 infoItems={infoItems}
-                social={{ likes: social.likes, boosts: social.boosts, shares: social.shares }}
+                social={{ likes: social.likes, zaps: social.zaps, shares: social.shares }}
                 episodes={episodes}
                 onTabChange={onTabChange}
                 onChapterPlay={onChapterPlay}
@@ -535,12 +535,12 @@ export function ContentPage({
                 onPlayEpisode={onPlayEpisode}
                 onUnlockSeason={onUnlockSeason}
                 onLike={onLike}
-                onBoost={onBoost}
+                onZap={onZap}
                 onPostReply={onPostReply}
                 onCommentReply={handleCommentReply}
                 onCommentShare={onCommentShare}
                 onCommentLike={onCommentLike}
-                onCommentBoost={onCommentBoost}
+                onCommentZap={onCommentZap}
                 onCommentOptions={onCommentOptions}
               />
             </section>
@@ -553,8 +553,8 @@ export function ContentPage({
             title={title}
             creatorName={creator.name}
             purchaseState={purchaseStateForSidebar}
-            price={priceForSidebar}
             creators={sidebarCreators}
+            episodes={sidebarEpisodes}
             about={about}
             infoItems={infoItems}
             social={social}
@@ -568,7 +568,7 @@ export function ContentPage({
             onComment={handleComment}
             onShare={onShare}
             onLike={onLike}
-            onBoost={onBoost}
+            onZap={onZap}
           />
         }
       />

@@ -14,7 +14,7 @@ import {
   LIBRARY_VIEW_FILTERS,
   type LibraryCategory,
   type LibraryViewFilter,
-} from "./mock-data"
+} from "@/mocks/library"
 
 // ── Public types ──────────────────────────────────────────────────────────────
 

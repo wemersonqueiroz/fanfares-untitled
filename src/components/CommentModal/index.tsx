@@ -14,6 +14,7 @@ import {
   Image01,
 } from "@untitledui/icons"
 import { cx } from "@/utils/cx"
+import { fmtCount } from "@/utils/fmtCount"
 import { Avatar } from "@/components/Avatar"
 import { Button } from "@/components/Button"
 import { IconButton } from "@/components/IconButton"
@@ -25,7 +26,7 @@ export type CommentSocial = {
   comments: number
   shares: number
   likes: number
-  boosts: number
+  zaps: number
 }
 
 export type ParentComment = {
@@ -63,16 +64,10 @@ export type CommentModalProps = {
   onComment?: () => void
   onShare?: () => void
   onLike?: () => void
-  onBoost?: () => void
+  onZap?: () => void
 }
 
 // ── Internals ─────────────────────────────────────────────────────────────────
-
-function fmt(n: number): string {
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`
-  if (n >= 1_000) return `${Math.round(n / 1_000)}K`
-  return String(n)
-}
 
 // Avatar imported from @/components/Avatar
 
@@ -95,7 +90,7 @@ function SocialBtn({
       aria-label={`${label} — ${count}`}
       className="flex items-center gap-1 cursor-pointer text-text-tertiary hover:text-text-secondary transition-colors focus-visible:outline-none">
       <Icon size={20} color="currentColor" aria-hidden="true" />
-      <span className="text-sm font-medium leading-6">{fmt(count)}</span>
+      <span className="text-sm font-medium leading-6">{fmtCount(count)}</span>
     </button>
   )
 }
@@ -155,7 +150,7 @@ export function CommentModal({
   onComment,
   onShare,
   onLike,
-  onBoost,
+  onZap,
 }: CommentModalProps) {
   const editorRef = useRef<HTMLParagraphElement>(null)
 
@@ -247,9 +242,9 @@ export function CommentModal({
               />
               <SocialBtn
                 icon={Lightning01}
-                count={social.boosts}
-                label="Boost"
-                onClick={onBoost}
+                count={social.zaps}
+                label="Zap"
+                onClick={onZap}
               />
             </div>
           </div>

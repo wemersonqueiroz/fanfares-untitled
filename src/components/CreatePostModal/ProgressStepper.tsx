@@ -1,5 +1,3 @@
-"use client"
-
 import { Check } from "@untitledui/icons"
 import { cx } from "@/utils/cx"
 

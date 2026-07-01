@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import type { FC, SVGProps } from "react"
 import {
   ArrowNarrowLeft,
   DotsHorizontal,
@@ -24,7 +25,7 @@ import {
   type ProfileSectionData,
   type ProfileTab,
   type ProfileUser,
-} from "./mock-data"
+} from "@/mocks/profile"
 
 // ── Public types ──────────────────────────────────────────────────────────────
 
@@ -41,7 +42,8 @@ export type ProfilePageProps = {
   onBack?: () => void
   onOptions?: () => void
   onQrCode?: () => void
-  onZap?: () => void
+  /** Fires when the profile-header zap button is clicked (zaps this profile's owner). */
+  onZapProfile?: () => void
   onFollow?: () => void
   onEditProfile?: () => void
   onFollowingClick?: () => void
@@ -61,7 +63,7 @@ export type ProfilePageProps = {
   onComment?: (id: string) => void
   onShare?: (id: string) => void
   onLike?: (id: string) => void
-  onBoost?: (id: string) => void
+  onZap?: (id: string) => void
   className?: string
 }
 
@@ -114,6 +116,35 @@ function MutualAvatarStack({ data }: { data: MutualFollowers }) {
   )
 }
 
+/**
+ * 32 × 32 frosted-glass circular button overlaid on the mobile banner.
+ * Used for the back arrow + action icons that sit on top of the cover image.
+ */
+function BannerIconButton({
+  icon: Icon,
+  label,
+  onClick,
+}: {
+  icon: FC<SVGProps<SVGSVGElement> & { size?: number; color?: string }>
+  label: string
+  onClick?: () => void
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={label}
+      className={cx(
+        "flex items-center justify-center size-8 rounded-full shrink-0 cursor-pointer",
+        "bg-app-bg/50 backdrop-blur-sm",
+        "hover:bg-app-bg/65 transition-colors duration-150",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
+      )}>
+      <Icon size={16} color="white" aria-hidden="true" />
+    </button>
+  )
+}
+
 /** "Follows you" badge shown next to the handle on else's profile */
 function FollowsYouBadge() {
   return (
@@ -138,7 +169,7 @@ function ProfileTabBar({
   onTabChange: (tab: ProfileTab) => void
 }) {
   return (
-    <div className="px-6 py-4 bg-app-bg border-t border-app-border shrink-0">
+    <div className="py-4 bg-app-bg border-t border-app-border shrink-0">
       <div
         className={cx(
           "flex gap-1 p-1.5 w-full",
@@ -187,7 +218,7 @@ function BrowseTabContent({
   onCardDownload?: (title: string) => void
 }) {
   return (
-    <div className="flex flex-col gap-14 p-6">
+    <div className="flex flex-col gap-14 py-6 sm:px-6">
       {sections.map(section => (
         <BrowseSection
           key={section.id}
@@ -220,7 +251,7 @@ export function ProfilePage({
   onBack,
   onOptions,
   onQrCode,
-  onZap,
+  onZapProfile,
   onFollow,
   onEditProfile,
   onFollowingClick,
@@ -238,15 +269,15 @@ export function ProfilePage({
   onComment,
   onShare,
   onLike,
-  onBoost,
+  onZap,
   className,
 }: ProfilePageProps) {
   const [activeTab, setActiveTab] = useState<ProfileTab>("Activity")
 
   return (
     <div className={cx("flex flex-col", className)}>
-      {/* ── Back arrow — its own row above the banner ───────────────────── */}
-      <div className="flex items-center p-4 shrink-0">
+      {/* ── Desktop-only back arrow row — sits above the banner ─────────── */}
+      <div className="hidden sm:flex items-center p-4 shrink-0">
         <IconButton
           icon={ArrowNarrowLeft}
           label="Go back"
@@ -258,14 +289,18 @@ export function ProfilePage({
 
       {/* ── Banner + avatar overlap ───────────────────────────────────────── */}
       {/*
-       * The banner is `relative`. The avatar is absolutely positioned to
-       * `bottom-0 translate-y-1/2` so exactly half of it (64 px) hangs
-       * below the banner edge. The thick `border-app-bg` ring creates the
-       * clean punch-out cut through both the banner and the identity section.
+       * On mobile the back arrow + action icons overlay the banner with a
+       * frosted-glass treatment; on desktop they sit in dedicated rows
+       * above/below. The avatar `translate-y-1/2` overhang scales with its
+       * own size: 32 px on mobile (size-16) and 64 px on desktop (size-32).
+       *
+       * `-mx-3 -mt-4 sm:mx-0 sm:mt-0` cancels the page wrapper's `py-4 px-3`
+       * so the banner reaches edge-to-edge on mobile while the body content
+       * keeps its own padding.
        */}
-      <div className="relative shrink-0">
+      <div className="relative shrink-0 -mx-3 -mt-4 sm:mx-0 sm:mt-0">
         {/* Cover image */}
-        <div className="h-profile-banner w-full overflow-hidden bg-brand-700">
+        <div className="h-[102px] sm:h-profile-banner w-full overflow-hidden bg-brand-700">
           {user.coverUrl && (
             <img
               src={user.coverUrl}
@@ -276,67 +311,114 @@ export function ProfilePage({
           )}
         </div>
 
+        {/* Mobile-only overlay — back arrow + action icons inside the banner */}
+        <div className="absolute inset-x-0 top-0 flex items-center justify-between gap-2 p-4 sm:hidden">
+          <BannerIconButton
+            icon={ArrowNarrowLeft}
+            label="Go back"
+            onClick={onBack}
+          />
+          <div className="flex items-center gap-2">
+            <BannerIconButton
+              icon={QrCode01}
+              label="Show QR code"
+              onClick={onQrCode}
+            />
+            <BannerIconButton icon={Zap} label="Zap" onClick={onZapProfile} />
+            {isOwnProfile && (
+              <BannerIconButton
+                icon={Edit01}
+                label="Edit profile"
+                onClick={onEditProfile}
+              />
+            )}
+            <BannerIconButton
+              icon={DotsHorizontal}
+              label="More options"
+              onClick={onOptions}
+            />
+          </div>
+        </div>
+
         {/* Avatar — pinned to banner bottom, half hanging below */}
         <Avatar
           src={user.avatarUrl}
           name={user.name}
           size="2xl"
-          className="absolute bottom-0 left-6 translate-y-1/2 z-10 border-[6px] border-app-bg"
+          className={cx(
+            "absolute bottom-0 left-4 sm:left-6 translate-y-1/2 z-10",
+            "size-16 sm:size-32 border-4 sm:border-[6px] border-app-bg"
+          )}
         />
       </div>
 
       {/* ── Identity section ─────────────────────────────────────────────── */}
-      <div className="bg-app-bg px-6 pb-0 shrink-0">
+      <div className="bg-app-bg pb-0 shrink-0 px-0">
         {/*
-         * Avatar zone — height matches the half of the avatar (64 px) that
-         * hangs below the banner, plus a small gap. The action buttons sit
-         * right-aligned inside this zone, vertically centred.
+         * Avatar zone — height matches the half of the avatar that hangs
+         * below the banner (32 px mobile, 64 px desktop) plus breathing room.
+         * Desktop fills the row with action icons + Follow/Edit; mobile only
+         * shows the Follow button for else's profile (action icons live in
+         * the banner overlay above).
          */}
-        <div className="flex items-center justify-end gap-2 min-h-[76px]">
-          <IconButton
-            icon={DotsHorizontal}
-            label="More options"
-            variant="card"
-            size="lg"
-            onClick={onOptions}
-          />
-          <IconButton
-            icon={QrCode01}
-            label="Show QR code"
-            variant="card"
-            size="lg"
-            onClick={onQrCode}
-          />
-          <IconButton
-            icon={Zap}
-            label="Zap"
-            variant="card"
-            size="lg"
-            onClick={onZap}
-          />
-          {isOwnProfile ? (
+        <div className="flex items-center justify-end gap-2 min-h-12 sm:min-h-19">
+          {/* Desktop action button row */}
+          <div className="hidden sm:flex items-center gap-2">
+            <IconButton
+              icon={DotsHorizontal}
+              label="More options"
+              variant="card"
+              size="lg"
+              onClick={onOptions}
+            />
+            <IconButton
+              icon={QrCode01}
+              label="Show QR code"
+              variant="card"
+              size="lg"
+              onClick={onQrCode}
+            />
+            <IconButton
+              icon={Zap}
+              label="Zap"
+              variant="card"
+              size="lg"
+              onClick={onZapProfile}
+            />
+            {isOwnProfile ? (
+              <Button
+                variant="secondary"
+                size="sm"
+                iconLeft={Edit01}
+                onClick={onEditProfile}>
+                Edit Profile
+              </Button>
+            ) : (
+              <Button variant="secondary" size="sm" onClick={onFollow}>
+                {isFollowing ? "Following" : "Follow"}
+              </Button>
+            )}
+          </div>
+          {/* Mobile Follow button — only shown when viewing someone else's profile */}
+          {!isOwnProfile && (
             <Button
               variant="secondary"
               size="sm"
-              iconLeft={Edit01}
-              onClick={onEditProfile}>
-              Edit Profile
-            </Button>
-          ) : (
-            <Button variant="secondary" size="sm" onClick={onFollow}>
+              onClick={onFollow}
+              className="sm:hidden">
               {isFollowing ? "Following" : "Follow"}
             </Button>
           )}
         </div>
 
         {/* Name + handle + badge */}
-        <div className="flex flex-col gap-4 mt-2">
+        <div className="flex flex-col gap-3 sm:gap-4 mt-2">
           <div className="flex flex-col gap-1">
-            <h1 className="text-display-md font-bold text-text-primary">
+            <h1 className="text-display-sm sm:text-display-md font-bold text-text-primary">
               {user.name}
             </h1>
             <div className="flex items-center gap-2">
-              <span className="text-base text-text-tertiary leading-6">
+              <span className="text-sm sm:text-base text-text-tertiary leading-6">
                 {user.handle}
               </span>
               {!isOwnProfile && user.followsYou && <FollowsYouBadge />}
@@ -344,43 +426,52 @@ export function ProfilePage({
           </div>
 
           {/* Bio */}
-          <p className="text-lg text-text-primary leading-7 max-w-xl">
+          <p className="text-base sm:text-lg text-text-primary leading-6 sm:leading-7 max-w-xl">
             {user.bio}
           </p>
 
           {/* Meta row — joined, following, followers, website */}
           <div className="flex flex-col gap-px">
-            <p className="text-base text-text-tertiary leading-6 py-1">
-              Joined Nostr on {user.joinedDate}
-            </p>
+            {/* Joined date — website joins this row on mobile */}
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-0 py-1">
+              <p className="text-sm sm:text-base text-text-tertiary leading-6">
+                Joined Nostr on {user.joinedDate}
+              </p>
+              {user.website && (
+                <button
+                  type="button"
+                  onClick={onWebsiteClick}
+                  className="sm:hidden text-sm text-utility-blue-500 cursor-pointer hover:underline focus-visible:outline-none">
+                  {user.website}
+                </button>
+              )}
+            </div>
+            {/* Stats — website joins this row on desktop */}
             <div className="flex items-center gap-2 flex-wrap py-1">
-              {/* Following */}
               <button
                 type="button"
                 onClick={onFollowingClick}
-                className="flex items-center gap-2 text-base cursor-pointer hover:underline focus-visible:outline-none">
+                className="flex items-center gap-2 text-sm sm:text-base cursor-pointer hover:underline focus-visible:outline-none">
                 <span className="font-bold text-text-primary">
                   {fmt(user.following)}
                 </span>
                 <span className="text-text-tertiary">Following</span>
               </button>
-              {/* Followers */}
               <button
                 type="button"
                 onClick={onFollowersClick}
-                className="flex items-center gap-2 text-base cursor-pointer hover:underline focus-visible:outline-none">
+                className="flex items-center gap-2 text-sm sm:text-base cursor-pointer hover:underline focus-visible:outline-none">
                 <span className="font-bold text-text-primary">
                   {fmt(user.followers)}
                 </span>
                 <span className="text-text-tertiary">Followers</span>
               </button>
-              {/* Website */}
               {user.website && (
                 <button
                   type="button"
                   onClick={onWebsiteClick}
                   className={cx(
-                    "text-base text-utility-blue-500 cursor-pointer",
+                    "hidden sm:inline text-base text-utility-blue-500 cursor-pointer",
                     "hover:underline focus-visible:outline-none"
                   )}>
                   {user.website}
@@ -388,9 +479,11 @@ export function ProfilePage({
               )}
             </div>
 
-            {/* Mutual followers — only on else's profile */}
+            {/* Mutual followers — only on else's profile, desktop only */}
             {!isOwnProfile && user.mutualFollowers && (
-              <MutualAvatarStack data={user.mutualFollowers} />
+              <div className="hidden sm:block">
+                <MutualAvatarStack data={user.mutualFollowers} />
+              </div>
             )}
           </div>
         </div>
@@ -401,7 +494,7 @@ export function ProfilePage({
 
       {/* ── Tab content ───────────────────────────────────────────────────── */}
       {activeTab === "Activity" && (
-        <div className="flex flex-col gap-4 p-6">
+        <div className="flex flex-col gap-4">
           {MOCK_ACTIVITY.map(card => (
             <ContentCard
               key={card.id}
@@ -411,7 +504,7 @@ export function ProfilePage({
               onComment={() => onComment?.(card.id)}
               onShare={() => onShare?.(card.id)}
               onLike={() => onLike?.(card.id)}
-              onBoost={() => onBoost?.(card.id)}
+              onZap={() => onZap?.(card.id)}
             />
           ))}
         </div>

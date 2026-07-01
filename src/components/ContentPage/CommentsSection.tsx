@@ -17,6 +17,7 @@ import {
   ChevronUp,
 } from "@untitledui/icons"
 import { cx } from "@/utils/cx"
+import { fmtCount } from "@/utils/fmtCount"
 import { Avatar } from "@/components/Avatar"
 import { IconButton } from "@/components/IconButton"
 import type { CommentData } from "./ContentPageBottom"
@@ -31,18 +32,12 @@ export type CommentsSectionProps = {
   onCommentReply?: (commentId: string) => void
   onCommentShare?: (commentId: string) => void
   onCommentLike?: (commentId: string) => void
-  onCommentBoost?: (commentId: string) => void
+  onCommentZap?: (commentId: string) => void
   onCommentOptions?: (commentId: string) => void
   className?: string
 }
 
 // ── Internals ─────────────────────────────────────────────────────────────────
-
-function fmt(n: number): string {
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`
-  if (n >= 1_000) return `${Math.round(n / 1_000)}K`
-  return String(n)
-}
 
 function EmptyState() {
   return (
@@ -140,7 +135,7 @@ function CommentRow({
   onReply,
   onShare,
   onLike,
-  onBoost,
+  onZap,
   onOptions,
 }: {
   comment: CommentData
@@ -148,7 +143,7 @@ function CommentRow({
   onReply?: (id: string) => void
   onShare?: (id: string) => void
   onLike?: (id: string) => void
-  onBoost?: (id: string) => void
+  onZap?: (id: string) => void
   onOptions?: (id: string) => void
 }) {
   const [repliesOpen, setRepliesOpen] = useState(false)
@@ -203,7 +198,7 @@ function CommentRow({
             { icon: MessageTextSquare02, count: comment.reactions.replies, label: "Reply", cb: () => onReply?.(comment.id) },
             { icon: Share07,             count: comment.reactions.shares,  label: "Share", cb: () => onShare?.(comment.id) },
             { icon: Heart,               count: comment.reactions.likes,   label: "Like",  cb: () => onLike?.(comment.id) },
-            { icon: Lightning01,         count: comment.reactions.boosts,  label: "Boost", cb: () => onBoost?.(comment.id) },
+            { icon: Lightning01,         count: comment.reactions.zaps,  label: "Zap", cb: () => onZap?.(comment.id) },
           ].map(({ icon: Icon, count, label, cb }) => (
             <button
               key={label}
@@ -212,7 +207,7 @@ function CommentRow({
               aria-label={`${label} — ${count}`}
               className="flex items-center gap-1.5 text-text-tertiary hover:text-text-primary transition-colors cursor-pointer focus-visible:outline-none">
               <Icon size={14} color="currentColor" aria-hidden="true" />
-              <span className="text-xs">{fmt(count)}</span>
+              <span className="text-xs">{fmtCount(count)}</span>
             </button>
           ))}
         </div>
@@ -246,7 +241,7 @@ function CommentRow({
               onReply={onReply}
               onShare={onShare}
               onLike={onLike}
-              onBoost={onBoost}
+              onZap={onZap}
               onOptions={onOptions}
             />
           ))}
@@ -265,7 +260,7 @@ export function CommentsSection({
   onCommentReply,
   onCommentShare,
   onCommentLike,
-  onCommentBoost,
+  onCommentZap,
   onCommentOptions,
   className,
 }: CommentsSectionProps) {
@@ -284,7 +279,7 @@ export function CommentsSection({
               onReply={onCommentReply}
               onShare={onCommentShare}
               onLike={onCommentLike}
-              onBoost={onCommentBoost}
+              onZap={onCommentZap}
               onOptions={onCommentOptions}
             />
           ))}

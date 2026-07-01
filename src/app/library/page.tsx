@@ -1,26 +1,11 @@
 "use client"
 
-import { AppPage, DemoContentRightAside } from "@/components/AppShell"
-import { MOCK_VIDEO_PAGE } from "@/components/ContentPage/mock-data"
+import { AppPage, useBrowseDemo } from "@/components/AppShell"
 import { LibraryPage } from "@/components/Library"
 
 export default function LibraryRoute() {
+  const demo = useBrowseDemo()
   return (
-    <AppPage
-      center={
-        <LibraryPage
-          onCardClick={title => console.log("→ open content", title)}
-          onShowAll={sectionId => console.log("→ show all", sectionId)}
-          onCardPlay={title => console.log("→ play", title)}
-          onCardOptions={title => console.log("→ options", title)}
-          onCardShare={title => console.log("→ share", title)}
-          onCardFavourite={title => console.log("→ favourite", title)}
-          onCardDownload={title => console.log("→ download", title)}
-        />
-      }
-      right={
-        <DemoContentRightAside contentType="video" mock={MOCK_VIDEO_PAGE} />
-      }
-    />
+    <AppPage center={<LibraryPage {...demo} />} />
   )
 }

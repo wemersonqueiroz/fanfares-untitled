@@ -16,7 +16,7 @@ import {
   EXPLORE_TIME_PERIODS,
   type ExploreCategory,
   type ExploreTimePeriod,
-} from "./mock-data"
+} from "@/mocks/explore"
 
 // ── Public types ──────────────────────────────────────────────────────────────
 

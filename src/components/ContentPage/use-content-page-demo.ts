@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { usePathname, useRouter } from "next/navigation"
-import { MOCK_PLAYER_STATE } from "./mock-data"
+import { MOCK_PLAYER_STATE } from "@/mocks/content-page"
 import type { ContentPageTab } from "./ContentPageBottom"
 
 // ── Public types ──────────────────────────────────────────────────────────────
@@ -88,14 +88,14 @@ export function useContentPageDemo(opts: ContentPageDemoOptions = {}) {
     onComment: () => console.log("→ comment"),
     onShare: () => console.log("→ share"),
     onLike: () => console.log("→ like"),
-    onBoost: () => console.log("→ boost"),
+    onZap: () => console.log("→ zap"),
 
     // ── Comments tab ─────────────────────────────────────────────────────────
     onPostReply: (content: string) => console.log("→ post reply", content),
     onCommentReply: (id: string) => console.log("→ reply to comment", id),
     onCommentShare: (id: string) => console.log("→ share comment", id),
     onCommentLike: (id: string) => console.log("→ like comment", id),
-    onCommentBoost: (id: string) => console.log("→ boost comment", id),
+    onCommentZap: (id: string) => console.log("→ zap comment", id),
     onCommentOptions: (id: string) => console.log("→ comment options", id),
 
     // ── Shell nav ────────────────────────────────────────────────────────────

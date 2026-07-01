@@ -1,14 +1,19 @@
 "use client"
 
-import { AppPage, DemoContentRightAside } from "@/components/AppShell"
+import { AppPage, useContentRightAsideDemo } from "@/components/AppShell"
+import { ContentRightAside } from "@/components/ContentPage/ContentRightAside"
 import { SettingsPage } from "@/components/Settings"
-import { MOCK_AUDIOBOOK_PAGE } from "@/components/ContentPage/mock-data"
+import { MOCK_AUDIOBOOK_PAGE } from "@/mocks/content-page"
 
 export default function SettingsRoute() {
   return (
     <AppPage
       center={<SettingsPage />}
-      right={<DemoContentRightAside contentType="audiobook" mock={MOCK_AUDIOBOOK_PAGE} />}
+      right={
+        <ContentRightAside
+          {...useContentRightAsideDemo({ contentType: "audiobook", mock: MOCK_AUDIOBOOK_PAGE })}
+        />
+      }
     />
   )
 }

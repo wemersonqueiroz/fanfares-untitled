@@ -11,6 +11,7 @@ import {
   TextInput,
   CreatorsField,
   RssFeedField,
+  useTagsField,
   type Creator,
 } from "@/components/Compose"
 
@@ -22,12 +23,16 @@ export type ComposeShowValues = {
   // Show details
   showTitle: string
   showArtworkFile: File | null
+  /** Cropped show artwork (16:9). */
+  showArtworkCroppedBlob: Blob | null
   showDescription: string
   showTags: string[]
   showRssFeed: string
   // First episode
   episodeTitle: string
   episodeThumbnailFile: File | null
+  /** Cropped episode thumbnail (16:9). */
+  episodeThumbnailCroppedBlob: Blob | null
   episodeDescription: string
   episodeCreators: Creator[]
   episodeTags: string[]
@@ -36,12 +41,22 @@ export type ComposeShowValues = {
 export type ComposeShowProps = {
   values: ComposeShowValues
   onChange: Dispatch<SetStateAction<ComposeShowValues>>
+  /** Fires when the user picks show artwork; parent should open the cropper. */
+  onShowArtworkCropRequest: (file: File) => void
+  /** Fires when the user picks an episode thumbnail; parent should open the cropper. */
+  onEpisodeThumbnailCropRequest: (file: File) => void
   className?: string
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-export function ComposeShow({ values, onChange, className }: ComposeShowProps) {
+export function ComposeShow({
+  values,
+  onChange,
+  onShowArtworkCropRequest,
+  onEpisodeThumbnailCropRequest,
+  className,
+}: ComposeShowProps) {
   const [showOpen, setShowOpen] = useState(true)
   const [episodeOpen, setEpisodeOpen] = useState(true)
 
@@ -52,21 +67,8 @@ export function ComposeShow({ values, onChange, className }: ComposeShowProps) {
     onChange(prev => ({ ...prev, ...partial }))
   }
 
-  function makeTagAdder(key: "showTags" | "episodeTags") {
-    return (raw: string) => {
-      const tag = raw.trim().replace(/^#/, "")
-      if (!tag) return
-      onChange(prev => {
-        if (prev[key].includes(tag)) return prev
-        return { ...prev, [key]: [...prev[key], tag] }
-      })
-    }
-  }
-
-  function makeTagRemover(key: "showTags" | "episodeTags") {
-    return (tag: string) =>
-      onChange(prev => ({ ...prev, [key]: prev[key].filter(t => t !== tag) }))
-  }
+  const showTags = useTagsField(onChange, "showTags")
+  const episodeTags = useTagsField(onChange, "episodeTags")
 
   return (
     <div className={cx("flex flex-col gap-4", className)}>
@@ -90,8 +92,16 @@ export function ComposeShow({ values, onChange, className }: ComposeShowProps) {
           <FieldLabel>Show Artwork</FieldLabel>
           <ImageDropzone
             file={values.showArtworkFile}
-            onFile={f => patch({ showArtworkFile: f })}
-            hint="PNG, JPG, WEBP (recommended 1:1 square)"
+            onFile={f =>
+              patch({
+                showArtworkFile: f,
+                showArtworkCroppedBlob: f ? values.showArtworkCroppedBlob : null,
+              })
+            }
+            onCropRequest={onShowArtworkCropRequest}
+            croppedBlob={values.showArtworkCroppedBlob}
+            previewAspectClass="aspect-video"
+            hint="PNG, JPG, WEBP (locked to 16:9)"
             label="Upload show artwork"
           />
         </div>
@@ -108,8 +118,8 @@ export function ComposeShow({ values, onChange, className }: ComposeShowProps) {
           <FieldLabel>Tags</FieldLabel>
           <TagsInput
             tags={values.showTags}
-            onAdd={makeTagAdder("showTags")}
-            onRemove={makeTagRemover("showTags")}
+            onAdd={showTags.addTag}
+            onRemove={showTags.removeTag}
             placeholder="Add a tag…"
           />
         </div>
@@ -150,8 +160,18 @@ export function ComposeShow({ values, onChange, className }: ComposeShowProps) {
           </p>
           <ImageDropzone
             file={values.episodeThumbnailFile}
-            onFile={f => patch({ episodeThumbnailFile: f })}
-            hint="PNG, JPG, WEBP (16:9 recommended)"
+            onFile={f =>
+              patch({
+                episodeThumbnailFile: f,
+                episodeThumbnailCroppedBlob: f
+                  ? values.episodeThumbnailCroppedBlob
+                  : null,
+              })
+            }
+            onCropRequest={onEpisodeThumbnailCropRequest}
+            croppedBlob={values.episodeThumbnailCroppedBlob}
+            previewAspectClass="aspect-video"
+            hint="PNG, JPG, WEBP (locked to 16:9)"
             label="Upload episode thumbnail"
           />
         </div>
@@ -176,8 +196,8 @@ export function ComposeShow({ values, onChange, className }: ComposeShowProps) {
           <FieldLabel>Tags</FieldLabel>
           <TagsInput
             tags={values.episodeTags}
-            onAdd={makeTagAdder("episodeTags")}
-            onRemove={makeTagRemover("episodeTags")}
+            onAdd={episodeTags.addTag}
+            onRemove={episodeTags.removeTag}
             placeholder="Add a tag…"
           />
         </div>
@@ -192,11 +212,13 @@ export function defaultComposeShowValues(): ComposeShowValues {
   return {
     showTitle: "",
     showArtworkFile: null,
+    showArtworkCroppedBlob: null,
     showDescription: "",
     showTags: [],
     showRssFeed: "",
     episodeTitle: "",
     episodeThumbnailFile: null,
+    episodeThumbnailCroppedBlob: null,
     episodeDescription: "",
     episodeCreators: [],
     episodeTags: [],

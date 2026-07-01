@@ -30,7 +30,7 @@ export function BrowseSection({
       aria-label={title}>
       {/* ── Section header ──────────────────────────────────────────────── */}
       <div className="flex items-center justify-between shrink-0">
-        <h2 className="text-heading-section-strong text-text-primary">
+        <h2 className="text-heading-list-item-strong sm:text-heading-section-strong text-text-primary">
           {title}
         </h2>
 

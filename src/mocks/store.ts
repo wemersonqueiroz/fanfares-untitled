@@ -23,10 +23,7 @@ export type StoreCollection = {
   items: StoreItem[]
 }
 
-// Picsum helpers — deterministic images by seed
-const sq   = (seed: string) => `https://picsum.photos/seed/${seed}/400/400`
-const wide = (seed: string) => `https://picsum.photos/seed/${seed}/640/360`
-const book = (seed: string) => `https://picsum.photos/seed/${seed}/240/300`
+import { sq, wide, book } from "./picsum"
 
 function thumb(type: StoreItemType, seed: string) {
   if (type === "book") return book(seed)

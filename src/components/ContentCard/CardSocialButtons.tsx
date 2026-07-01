@@ -3,6 +3,7 @@
 import type { FC, SVGProps } from "react"
 import { Heart, Lightning01, MessageTextSquare02, Share07 } from "@untitledui/icons"
 import { cx } from "@/utils/cx"
+import { fmtCount } from "@/utils/fmtCount"
 
 // ── Public types ──────────────────────────────────────────────────────────────
 
@@ -10,23 +11,17 @@ export type CardSocialButtonsProps = {
   comments: number
   shares: number
   likes: number
-  boosts: number
+  zaps: number
   onComment?: () => void
   onShare?: () => void
   onLike?: () => void
-  onBoost?: () => void
+  onZap?: () => void
   className?: string
 }
 
 // ── Internals ─────────────────────────────────────────────────────────────────
 
 type IconComp = FC<SVGProps<SVGSVGElement> & { size?: number; color?: string }>
-
-function fmt(n: number): string {
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`
-  if (n >= 1_000) return `${Math.round(n / 1_000)}K`
-  return String(n)
-}
 
 function SocialBtn({
   icon: Icon,
@@ -52,7 +47,7 @@ function SocialBtn({
         "focus-visible:ring-2 focus-visible:ring-brand-500/50"
       )}>
       <Icon size={18} color="currentColor" aria-hidden="true" />
-      <span>{fmt(count)}</span>
+      <span>{fmtCount(count)}</span>
     </button>
   )
 }
@@ -63,11 +58,11 @@ export function CardSocialButtons({
   comments,
   shares,
   likes,
-  boosts,
+  zaps,
   onComment,
   onShare,
   onLike,
-  onBoost,
+  onZap,
   className,
 }: CardSocialButtonsProps) {
   return (
@@ -75,7 +70,7 @@ export function CardSocialButtons({
       <SocialBtn icon={MessageTextSquare02} count={comments} label="Comments" onClick={onComment} />
       <SocialBtn icon={Share07} count={shares} label="Share" onClick={onShare} />
       <SocialBtn icon={Heart} count={likes} label="Like" onClick={onLike} />
-      <SocialBtn icon={Lightning01} count={boosts} label="Boost" onClick={onBoost} />
+      <SocialBtn icon={Lightning01} count={zaps} label="Zap" onClick={onZap} />
     </div>
   )
 }

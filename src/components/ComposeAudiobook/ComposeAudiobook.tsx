@@ -10,6 +10,7 @@ import {
   TextInput,
   CreatorsField,
   RssFeedField,
+  useTagsField,
   type Creator,
 } from "@/components/Compose"
 
@@ -20,6 +21,8 @@ export type { Creator }
 export type ComposeAudiobookValues = {
   title: string
   coverFile: File | null
+  /** JPEG blob produced by the crop screen — null until the user has cropped. */
+  coverCroppedBlob: Blob | null
   description: string
   creators: Creator[]
   tags: string[]
@@ -31,6 +34,8 @@ export type ComposeAudiobookProps = {
   onChange: Dispatch<SetStateAction<ComposeAudiobookValues>>
   /** "book" | "audiobook" (affects labels) */
   kind: "book" | "audiobook"
+  /** Fires when the user picks a file and the parent should open the cropper. */
+  onCoverCropRequest: (file: File) => void
   className?: string
 }
 
@@ -40,28 +45,23 @@ export function ComposeAudiobook({
   values,
   onChange,
   kind,
+  onCoverCropRequest,
   className,
 }: ComposeAudiobookProps) {
   const titleId = useId()
 
   const coverLabel = kind === "audiobook" ? "Artwork" : "Book Cover Image"
+  const previewAspect = kind === "audiobook" ? "aspect-square" : "aspect-[4/5]"
+  const hint =
+    kind === "audiobook"
+      ? "SVG, PNG, JPG or GIF (locked to 1:1 square)"
+      : "SVG, PNG, JPG or GIF (locked to 4:5 portrait)"
 
   function patch(partial: Partial<ComposeAudiobookValues>) {
     onChange(prev => ({ ...prev, ...partial }))
   }
 
-  function addTag(raw: string) {
-    const tag = raw.trim().replace(/^#/, "")
-    if (!tag) return
-    onChange(prev => {
-      if (prev.tags.includes(tag)) return prev
-      return { ...prev, tags: [...prev.tags, tag] }
-    })
-  }
-
-  function removeTag(tag: string) {
-    onChange(prev => ({ ...prev, tags: prev.tags.filter(t => t !== tag) }))
-  }
+  const { addTag, removeTag } = useTagsField(onChange, "tags")
 
   return (
     <div className={cx("flex flex-col gap-5", className)}>
@@ -79,8 +79,11 @@ export function ComposeAudiobook({
         <FieldLabel>{coverLabel}</FieldLabel>
         <ImageDropzone
           file={values.coverFile}
-          onFile={f => patch({ coverFile: f })}
-          hint="SVG, PNG, JPG or GIF (recommended 1:1 square)"
+          onFile={f => patch({ coverFile: f, coverCroppedBlob: f ? values.coverCroppedBlob : null })}
+          onCropRequest={onCoverCropRequest}
+          croppedBlob={values.coverCroppedBlob}
+          previewAspectClass={previewAspect}
+          hint={hint}
           label={`Upload ${coverLabel}`}
         />
       </div>

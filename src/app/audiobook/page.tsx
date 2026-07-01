@@ -1,7 +1,7 @@
 "use client"
 
 import { ContentPage } from "@/components/ContentPage"
-import { MOCK_AUDIOBOOK_PAGE } from "@/components/ContentPage/mock-data"
+import { MOCK_AUDIOBOOK_PAGE } from "@/mocks/content-page"
 import { useContentPageDemo } from "@/components/ContentPage/use-content-page-demo"
 
 export default function AudiobookPage() {

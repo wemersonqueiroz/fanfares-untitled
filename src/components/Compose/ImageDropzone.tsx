@@ -1,13 +1,15 @@
 "use client"
 
-import { useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { UploadCloud01, XClose } from "@untitledui/icons"
 import { cx } from "@/utils/cx"
+import { Button } from "@/components/Button"
 import { IconButton } from "@/components/IconButton"
 
 // ── Public types ──────────────────────────────────────────────────────────────
 
 export type ImageDropzoneProps = {
+  /** Source file (the raw upload). Kept so we can re-open the cropper if needed. */
   file: File | null
   onFile: (f: File | null) => void
   /** Short hint shown below "Click to upload", e.g. "PNG, JPG (max 800×400px)" */
@@ -16,17 +18,101 @@ export type ImageDropzoneProps = {
   label: string
   /** File accept attribute. Default: "image/*" */
   accept?: string
+
+  // ── Crop mode (opt-in) ─────────────────────────────────────────────────────
+
+  /**
+   * Fires when the user picks a file. When present, the dropzone treats
+   * itself as a crop-required field: it does NOT auto-store the source file
+   * (that's the parent's job after cropping) and it renders the preview
+   * from `croppedBlob` at `previewAspectClass` instead of the compact row.
+   */
+  onCropRequest?: (file: File) => void
+  /** Cropped result to show as a full-width preview. Ignored without `onCropRequest`. */
+  croppedBlob?: Blob | null
+  /** Tailwind aspect class for the preview panel (e.g. "aspect-video"). Default: aspect-square. */
+  previewAspectClass?: string
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-export function ImageDropzone({ file, onFile, hint, label, accept = "image/*" }: ImageDropzoneProps) {
-  const inputRef  = useRef<HTMLInputElement>(null)
+export function ImageDropzone({
+  file,
+  onFile,
+  hint,
+  label,
+  accept = "image/*",
+  onCropRequest,
+  croppedBlob,
+  previewAspectClass = "aspect-square",
+}: ImageDropzoneProps) {
+  const inputRef = useRef<HTMLInputElement>(null)
   const [dragging, setDragging] = useState(false)
 
-  return (
-    <div>
-      {file ? (
+  // Managed object URL for the cropped preview — cleaned up on change/unmount.
+  const [croppedUrl, setCroppedUrl] = useState<string | null>(null)
+  useEffect(() => {
+    if (!croppedBlob) {
+      setCroppedUrl(null)
+      return
+    }
+    const url = URL.createObjectURL(croppedBlob)
+    setCroppedUrl(url)
+    return () => URL.revokeObjectURL(url)
+  }, [croppedBlob])
+
+  const cropMode = Boolean(onCropRequest)
+
+  function handleFile(picked: File) {
+    if (cropMode) {
+      // Parent owns the source-file lifecycle after cropping.
+      onCropRequest?.(picked)
+      return
+    }
+    onFile(picked)
+  }
+
+  // ── Cropped preview (crop mode + we have a blob) ───────────────────────────
+
+  if (cropMode && croppedUrl) {
+    return (
+      <div
+        className={cx(
+          "relative rounded-xl overflow-hidden border border-app-border bg-app-card",
+          previewAspectClass
+        )}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={croppedUrl}
+          alt="Cropped preview"
+          className="w-full h-full object-cover"
+        />
+        <div className="absolute top-2 right-2 flex items-center gap-1">
+          {file && (
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => onCropRequest?.(file)}>
+              Recrop
+            </Button>
+          )}
+          <IconButton
+            icon={XClose}
+            label="Remove image"
+            variant="ghost"
+            size="sm"
+            onClick={() => onFile(null)}
+          />
+        </div>
+      </div>
+    )
+  }
+
+  // ── Compact preview (default mode + file already selected) ──────────────────
+
+  if (!cropMode && file) {
+    return (
+      <div>
         <div className="flex items-center gap-3 p-3 rounded-xl border border-app-border bg-app-card">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
@@ -34,7 +120,9 @@ export function ImageDropzone({ file, onFile, hint, label, accept = "image/*" }:
             alt="Preview"
             className="size-10 rounded-md object-cover shrink-0"
           />
-          <span className="flex-1 text-sm text-text-primary truncate min-w-0">{file.name}</span>
+          <span className="flex-1 text-sm text-text-primary truncate min-w-0">
+            {file.name}
+          </span>
           <IconButton
             icon={XClose}
             label="Remove"
@@ -43,37 +131,47 @@ export function ImageDropzone({ file, onFile, hint, label, accept = "image/*" }:
             onClick={() => onFile(null)}
           />
         </div>
-      ) : (
-        <button
-          type="button"
-          onClick={() => inputRef.current?.click()}
-          onDragOver={e => { e.preventDefault(); setDragging(true) }}
-          onDragLeave={() => setDragging(false)}
-          onDrop={e => {
-            e.preventDefault()
-            setDragging(false)
-            if (e.dataTransfer.files[0]) onFile(e.dataTransfer.files[0])
-          }}
-          className={cx(
-            "flex flex-col items-center justify-center gap-2 w-full py-7 px-4 rounded-xl",
-            "border-2 border-dashed cursor-pointer transition-colors duration-150",
-            dragging
-              ? "border-brand-600 bg-brand-600/5"
-              : "border-app-border bg-app-card hover:bg-app-card-active hover:border-app-border-hover",
-            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/50"
-          )}
-          aria-label={label}>
-          <div className="flex items-center justify-center size-10 rounded-lg bg-brand-600/10">
-            <UploadCloud01 size={20} color="var(--color-brand-600)" aria-hidden="true" />
-          </div>
-          <div className="flex flex-col items-center gap-0.5 text-center">
-            <span className="text-sm text-text-secondary">
-              <span className="font-semibold">Click to upload</span> or drag and drop
-            </span>
-            <span className="text-xs text-text-tertiary">{hint}</span>
-          </div>
-        </button>
-      )}
+      </div>
+    )
+  }
+
+  // ── Drop target (both modes when there's nothing yet) ──────────────────────
+
+  return (
+    <div>
+      <button
+        type="button"
+        onClick={() => inputRef.current?.click()}
+        onDragOver={e => {
+          e.preventDefault()
+          setDragging(true)
+        }}
+        onDragLeave={() => setDragging(false)}
+        onDrop={e => {
+          e.preventDefault()
+          setDragging(false)
+          const picked = e.dataTransfer.files[0]
+          if (picked) handleFile(picked)
+        }}
+        className={cx(
+          "flex flex-col items-center justify-center gap-2 w-full py-7 px-4 rounded-xl",
+          "border-2 border-dashed cursor-pointer transition-colors duration-150",
+          dragging
+            ? "border-brand-600 bg-brand-600/5"
+            : "border-app-border bg-app-card hover:bg-app-card-active hover:border-app-border-hover",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/50"
+        )}
+        aria-label={label}>
+        <div className="flex items-center justify-center size-10 rounded-lg bg-brand-600/10">
+          <UploadCloud01 size={20} color="var(--color-brand-600)" aria-hidden="true" />
+        </div>
+        <div className="flex flex-col items-center gap-0.5 text-center">
+          <span className="text-sm text-text-secondary">
+            <span className="font-semibold">Click to upload</span> or drag and drop
+          </span>
+          <span className="text-xs text-text-tertiary">{hint}</span>
+        </div>
+      </button>
 
       <input
         ref={inputRef}
@@ -81,7 +179,10 @@ export function ImageDropzone({ file, onFile, hint, label, accept = "image/*" }:
         accept={accept}
         className="sr-only"
         aria-hidden="true"
-        onChange={e => { if (e.target.files?.[0]) onFile(e.target.files[0]) }}
+        onChange={e => {
+          const picked = e.target.files?.[0]
+          if (picked) handleFile(picked)
+        }}
       />
     </div>
   )

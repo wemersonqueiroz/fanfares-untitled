@@ -2,6 +2,7 @@
 
 import { type ReactNode } from "react"
 import { cx } from "@/utils/cx"
+import { fmtCount } from "@/utils/fmtCount"
 import { Avatar } from "@/components/Avatar"
 import { Button } from "@/components/Button"
 import { IconButton } from "@/components/IconButton"
@@ -54,7 +55,7 @@ export type CommentData = {
     replies: number
     shares: number
     likes: number
-    boosts: number
+    zaps: number
   }
   /** Nested replies — one level deep */
   replies?: CommentData[]
@@ -66,7 +67,7 @@ export type ContentPageBottomProps = {
   chapters?: ChapterData[]
   social: {
     likes: number
-    boosts: number
+    zaps: number
     shares: number
   }
   // ── Comments tab data ──────────────────────────────────────────────────────
@@ -87,23 +88,17 @@ export type ContentPageBottomProps = {
   onPlayEpisode?: (episodeId: string) => void
   onUnlockSeason?: (seasonId: string) => void
   onLike?: () => void
-  onBoost?: () => void
+  onZap?: () => void
   onPostReply?: (content: string) => void
   onCommentReply?: (commentId: string) => void
   onCommentShare?: (commentId: string) => void
   onCommentLike?: (commentId: string) => void
-  onCommentBoost?: (commentId: string) => void
+  onCommentZap?: (commentId: string) => void
   onCommentOptions?: (commentId: string) => void
   className?: string
 }
 
 // ── Shared helpers ────────────────────────────────────────────────────────────
-
-function fmt(n: number): string {
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`
-  if (n >= 1_000) return `${Math.round(n / 1_000)}K`
-  return String(n)
-}
 
 function EmptyState({ message }: { message: string }) {
   return (
@@ -142,12 +137,12 @@ export function ContentPageBottom({
   onPlayEpisode,
   onUnlockSeason,
   onLike,
-  onBoost,
+  onZap,
   onPostReply,
   onCommentReply,
   onCommentShare,
   onCommentLike,
-  onCommentBoost,
+  onCommentZap,
   onCommentOptions,
   className,
 }: ContentPageBottomProps) {
@@ -189,22 +184,22 @@ export function ContentPageBottom({
             aria-label={`Like — ${social.likes}`}
             className="flex items-center gap-1.5 sm:gap-2 cursor-pointer focus-visible:outline-none">
             <Heart size={20} color="var(--color-text-tertiary)" aria-hidden="true" />
-            <span className="text-sm sm:text-base font-medium text-text-primary">{fmt(social.likes)}</span>
+            <span className="text-sm sm:text-base font-medium text-text-primary">{fmtCount(social.likes)}</span>
           </button>
           <button
             type="button"
-            onClick={onBoost}
-            aria-label={`Boost — ${social.boosts}`}
+            onClick={onZap}
+            aria-label={`Zap — ${social.zaps}`}
             className="flex items-center gap-1.5 sm:gap-2 cursor-pointer focus-visible:outline-none">
             <Lightning01 size={20} color="var(--color-text-tertiary)" aria-hidden="true" />
-            <span className="text-sm sm:text-base font-medium text-text-primary">{fmt(social.boosts)}</span>
+            <span className="text-sm sm:text-base font-medium text-text-primary">{fmtCount(social.zaps)}</span>
           </button>
           <button
             type="button"
             aria-label={`Share — ${social.shares}`}
             className="flex items-center gap-1.5 sm:gap-2 cursor-pointer focus-visible:outline-none">
             <Share07 size={20} color="var(--color-text-tertiary)" aria-hidden="true" />
-            <span className="text-sm sm:text-base font-medium text-text-primary">{fmt(social.shares)}</span>
+            <span className="text-sm sm:text-base font-medium text-text-primary">{fmtCount(social.shares)}</span>
           </button>
         </div>
       </div>
@@ -295,7 +290,7 @@ export function ContentPageBottom({
           onCommentReply={onCommentReply}
           onCommentShare={onCommentShare}
           onCommentLike={onCommentLike}
-          onCommentBoost={onCommentBoost}
+          onCommentZap={onCommentZap}
           onCommentOptions={onCommentOptions}
         />
       )}

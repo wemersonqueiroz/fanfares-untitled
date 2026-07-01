@@ -1,14 +1,14 @@
 "use client"
 
 import { useState } from "react"
-import { AppPage, DemoContentRightAside } from "@/components/AppShell"
+import { AppPage, useStoreDemo } from "@/components/AppShell"
 import { MyStore } from "@/components/MyStore"
-import { MOCK_STORE_COLLECTIONS, type StoreCollection } from "@/components/MyStore/mock-data"
-import { MOCK_VIDEO_PAGE } from "@/components/ContentPage/mock-data"
+import { MOCK_STORE_COLLECTIONS, type StoreCollection } from "@/mocks/store"
 
 export default function StorePage() {
   const [collections, setCollections] = useState<StoreCollection[]>(MOCK_STORE_COLLECTIONS)
   const [mode, setMode] = useState<"view" | "manage">("view")
+  const demo = useStoreDemo()
 
   return (
     <AppPage
@@ -19,12 +19,8 @@ export default function StorePage() {
           onChange={setCollections}
           onEditStore={() => setMode("manage")}
           onSave={() => setMode("view")}
-          onAddItems={id => console.log("→ add items to collection", id)}
-          onShowAll={id => console.log("→ show all for collection", id)}
+          {...demo}
         />
-      }
-      right={
-        <DemoContentRightAside contentType="video" mock={MOCK_VIDEO_PAGE} />
       }
     />
   )

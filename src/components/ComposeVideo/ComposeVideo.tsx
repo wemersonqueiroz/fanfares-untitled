@@ -10,6 +10,7 @@ import {
   TextInput,
   CreatorsField,
   RssFeedField,
+  useTagsField,
   type Creator,
 } from "@/components/Compose"
 
@@ -20,6 +21,8 @@ export type VideoCreator = Creator
 export type ComposeVideoValues = {
   title: string
   thumbnailFile: File | null
+  /** JPEG blob produced by the crop screen — null until the user has cropped. */
+  thumbnailCroppedBlob: Blob | null
   description: string
   creators: Creator[]
   tags: string[]
@@ -29,30 +32,26 @@ export type ComposeVideoValues = {
 export type ComposeVideoProps = {
   values: ComposeVideoValues
   onChange: Dispatch<SetStateAction<ComposeVideoValues>>
+  /** Fires when the user picks a thumbnail file; parent should open the cropper. */
+  onThumbnailCropRequest: (file: File) => void
   className?: string
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-export function ComposeVideo({ values, onChange, className }: ComposeVideoProps) {
+export function ComposeVideo({
+  values,
+  onChange,
+  onThumbnailCropRequest,
+  className,
+}: ComposeVideoProps) {
   const titleId = useId()
 
   function patch(partial: Partial<ComposeVideoValues>) {
     onChange(prev => ({ ...prev, ...partial }))
   }
 
-  function addTag(raw: string) {
-    const tag = raw.trim().replace(/^#/, "")
-    if (!tag) return
-    onChange(prev => {
-      if (prev.tags.includes(tag)) return prev
-      return { ...prev, tags: [...prev.tags, tag] }
-    })
-  }
-
-  function removeTag(tag: string) {
-    onChange(prev => ({ ...prev, tags: prev.tags.filter(t => t !== tag) }))
-  }
+  const { addTag, removeTag } = useTagsField(onChange, "tags")
 
   return (
     <div className={cx("flex flex-col gap-5", className)}>
@@ -76,8 +75,11 @@ export function ComposeVideo({ values, onChange, className }: ComposeVideoProps)
         </p>
         <ImageDropzone
           file={values.thumbnailFile}
-          onFile={f => patch({ thumbnailFile: f })}
-          hint="PNG, JPG, WEBP (16:9 recommended)"
+          onFile={f => patch({ thumbnailFile: f, thumbnailCroppedBlob: f ? values.thumbnailCroppedBlob : null })}
+          onCropRequest={onThumbnailCropRequest}
+          croppedBlob={values.thumbnailCroppedBlob}
+          previewAspectClass="aspect-video"
+          hint="PNG, JPG, WEBP (locked to 16:9)"
           label="Upload thumbnail"
         />
       </div>
@@ -123,6 +125,7 @@ export function defaultComposeVideoValues(): ComposeVideoValues {
   return {
     title: "",
     thumbnailFile: null,
+    thumbnailCroppedBlob: null,
     description: "",
     creators: [],
     tags: [],

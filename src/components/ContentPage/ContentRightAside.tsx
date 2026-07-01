@@ -1,5 +1,3 @@
-"use client"
-
 import { RightSidebar } from "@/components/RightSidebar"
 import type { RightSidebarProps } from "@/components/RightSidebar"
 
